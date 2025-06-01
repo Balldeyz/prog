@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REGISTRATION PROTOCOL | SMART FINANCE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #0ff0fc;
+            --neon-pink: #ff2a6d;
+            --neon-purple: #d300c5;
+            --matrix-green: #00ff41;
+            --dark-bg: #0d0d0d;
+            --darker-bg: #050505;
+            --text-glow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue);
+            --pink-glow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink);
+            --scanline: repeating-linear-gradient(
+                0deg,
+                rgba(0, 255, 65, 0.05),
+                rgba(0, 255, 65, 0.05) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--dark-bg);
+            background-image: var(--scanline);
+            color: var(--neon-blue);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, transparent 0%, var(--dark-bg) 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .glitch-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.05"/></svg>');
+            pointer-events: none;
+            z-index: -1;
+            animation: glitch 5s infinite alternate;
+        }
+
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(13, 13, 13, 0.9);
+            border: 1px solid var(--neon-blue);
+            border-radius: 0;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3), inset 0 0 20px rgba(0, 255, 65, 0.1);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border: 1px solid var(--neon-pink);
+            border-radius: 0;
+            animation: pulse 4s infinite alternate;
+            z-index: -1;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.8; }
+        }
+
+        h1 {
+            color: var(--neon-blue);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: var(--text-glow);
+            position: relative;
+        }
+
+        h1::after {
+            content: ">";
+            position: absolute;
+            right: 20%;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--neon-blue);
+            text-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
+            letter-spacing: 1px;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--neon-blue);
+            border-radius: 0;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            color: var(--neon-blue);
+            transition: all 0.3s;
+            box-shadow: inset 0 0 10px rgba(0, 255, 65, 0.1);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 10px var(--neon-pink), inset 0 0 10px rgba(255, 42, 109, 0.2);
+        }
+
+        input::placeholder {
+            color: rgba(0, 255, 65, 0.5);
+            font-style: italic;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, var(--neon-purple) 0%, var(--neon-pink) 100%);
+            color: black;
+            border: none;
+            border-radius: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        button:hover {
+            box-shadow: var(--pink-glow);
+            transform: translateY(-2px);
+        }
+
+        button::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+            z-index: -1;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--matrix-green);
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .back-link:hover {
+            color: var(--neon-blue);
+            text-shadow: var(--text-glow);
+        }
+
+        .back-link::after {
+            content: "";
+            display: block;
+            width: 0;
+            height: 2px;
+            background: var(--neon-blue);
+            transition: width 0.3s;
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .back-link:hover::after {
+            width: 100%;
+        }
+
+        /* Johnny Silverhand Easter Egg */
+        .samurai-logo {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            opacity: 0.3;
+            transition: all 0.5s;
+            cursor: pointer;
+        }
+
+        .samurai-logo:hover {
+            opacity: 1;
+            transform: scale(1.2) rotate(10deg);
+        }
+
+        /* Hidden message */
+        .hidden-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--darker-bg);
+            border: 2px solid var(--neon-pink);
+            padding: 2rem;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 0 30px var(--neon-pink);
+            max-width: 80%;
+            text-align: center;
+        }
+
+        .hidden-message p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .hidden-message button {
+            width: auto;
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="glitch-effect"></div>
+    
+    <div class="container">
+        <h1>USER REGISTRATION PROTOCOL</h1>
+        <form method="POST" action="{{ url_for('register') }}">
+            <div class="form-group">
+                <label for="first_name">IDENTITY CONFIRMATION</label>
+                <input type="text" id="first_name" name="first_name" required placeholder="ENTER PRIMARY DESIGNATION">
+            </div>
+            <div class="form-group">
+                <label for="last_name">SECONDARY DESIGNATION</label>
+                <input type="text" id="last_name" name="last_name" required placeholder="ENTER SECONDARY DESIGNATION">
+            </div>
+            <div class="form-group">
+                <label for="workplace">CORPORATE AFFILIATION (OPTIONAL)</label>
+                <input type="text" id="workplace" name="workplace" placeholder="ENTER MEGACORP ID">
+            </div>
+            <div class="form-group">
+                <label for="salary">CREDITS ALLOCATION</label>
+                <input type="number" id="salary" name="salary" step="0.01" min="0" required placeholder="AMOUNT IN €$">
+            </div>
+            <button type="submit">INITIATE REGISTRATION</button>
+        </form>
+        <a href="{{ url_for('main_menu') }}" class="back-link">← RETURN TO MAINFRAME</a>
+        
+        <!-- Johnny Silverhand Easter Egg -->
+        <svg class="samurai-logo" onclick="showMessage()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+            <path fill="var(--neon-pink)" d="M50 10L20 50l30 40 30-40z"/>
+            <path fill="var(--neon-blue)" d="M50 10l30 40H20z"/>
+        </svg>
+    </div>
+
+    <!-- Hidden Johnny Silverhand Message -->
+    <div class="hidden-message" id="silverhandMessage">
+        <p>"Wake up, samurai. We've got a city to burn."</p>
+        <p>- Johnny Silverhand</p>
+        <button onclick="hideMessage()">[ CLOSE TRANSMISSION ]</button>
+    </div>
+
+    <script>
+        function showMessage() {
+            document.getElementById('silverhandMessage').style.display = 'block';
+            // Play a sound effect if you want
+            // new Audio('silverhand_quote.mp3').play();
+        }
+
+        function hideMessage() {
+            document.getElementById('silverhandMessage').style.display = 'none';
+        }
+
+        // Add some terminal-like typing effect for inputs
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.animation = 'none';
+                void this.offsetWidth; // Trigger reflow
+                this.style.animation = 'glitch 0.5s 1';
+            });
+        });
+
+        // Add some cyberpunk sound effects
+        document.querySelector('button').addEventListener('mouseover', function() {
+            // new Audio('hover_sound.mp3').play();
+        });
+    </script>
+</body>
+</html>

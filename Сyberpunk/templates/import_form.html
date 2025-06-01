@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Import uživatelů</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2><i class="fas fa-file-import"></i> Import uživatelů z Excelu</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".xlsx" required>
+            <button type="submit" class="btn btn-primary">Nahrát</button>
+        </form>
+        <br>
+        <a href="{{ url_for('main_menu') }}" class="btn btn-secondary">Zpět do menu</a>
+    </div>
+</body>
+</html>

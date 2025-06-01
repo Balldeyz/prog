@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>FAMILY WALLET | CYBER ADMIN</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>FAMILY WALLET // ID: {{ family_id }}</h1>
+            <div>
+                <button class="btn" id="addMemberBtn">ADD MEMBER</button>
+                <button class="btn" id="addMortgageBtn" style="margin-left: 1rem;">ADD MORTGAGE</button>
+                <button class="btn" id="saveDataBtn" style="margin-left: 1rem;">SAVE FAMILY DATA</button>
+                <button class="btn" style="margin-left: 1rem;" onclick="showHackerMessage()">DEBUG</button>
+            </div>
+        </div>
+        
+        <div class="members-list">
+            <h3 class="list-title">FAMILY MEMBERS // ACCESS CONTROL</h3>
+            <table id="membersTable">
+                <thead>
+                    <tr>
+                        <th>MEMBER</th>
+                        <th>ROLE</th>
+                        <th>AGE</th>
+                        <th>EMPLOYMENT</th>
+                        <th>INCOME</th>
+                        <th>CONTRIBUTION</th>
+                        <th>LAST ACTIVITY</th>
+                        <th>STATUS</th>
+                        <th>ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody id="membersTableBody">
+                    <!-- Members will be added dynamically -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mortgage-section">
+            <h3 class="list-title">FAMILY MORTGAGE // FINANCIAL OBLIGATIONS</h3>
+            <div id="mortgageInfo" class="mortgage-info">
+                <!-- Mortgage info will be displayed here -->
+                <p class="no-mortgage">NO ACTIVE MORTGAGE RECORDED</p>
+            </div>
+        </div>
+        
+        <div class="expenses-section">
+            <h3 class="list-title">MONTHLY EXPENSE BREAKDOWN // AUTOMATED CALCULATION</h3>
+            <div class="expenses-grid">
+                <div class="expense-category">
+                    <h4>FIXED EXPENSES <button class="btn-small" onclick="openEditExpensesModal('fixed')">EDIT</button></h4>
+                    <div class="expense-item">
+                        <span>Mortgage/Rent:</span>
+                        <span id="mortgageExpense">0 Kč</span>
+                    </div>
+                    <div class="expense-item">
+                        <span>Utilities:</span>
+                        <span id="utilitiesExpense">0 Kč</span>
+                    </div>
+                    <div class="expense-item">
+                        <span>Insurance:</span>
+                        <span id="insuranceExpense">0 Kč</span>
+                    </div>
+                    <div class="expense-item total">
+                        <span>TOTAL FIXED:</span>
+                        <span id="totalFixedExpense">0 Kč</span>
+                    </div>
+                </div>
+                
+                <div class="expense-category">
+                    <h4>VARIABLE EXPENSES <button class="btn-small" onclick="openEditExpensesModal('variable')">EDIT</button></h4>
+                    <div class="expense-item">
+                        <span>Food:</span>
+                        <span id="foodExpense">0 Kč</span>
+                    </div>
+                    <div class="expense-item">
+                        <span>Transport:</span>
+                        <span id="transportExpense">0 Kč</span>
+                    </div>
+                    <div class="expense-item">
+                        <span>Education:</span>
+                        <span id="educationExpense">0 Kč</span>
+                    </div>
+                    <div class="expense-item total">
+                        <span>TOTAL VARIABLE:</span>
+                        <span id="totalVariableExpense">0 Kč</span>
+                    </div>
+                </div>
+                
+                <div class="expense-category">
+                    <h4>DISCRETIONARY <button class="btn-small" onclick="openEditExpensesModal('discretionary')">EDIT</button></h4>
+                    <div class="expense-item">
+                        <span>Entertainment:</span>
+                        <span id="entertainmentExpense">0 Kč</span>
+                    </div>
+                    <div class="expense-item">
+                        <span>Savings:</span>
+                        <span id="savingsExpense">0 Kč</span>
+                    </div>
+                    <div class="expense-item">
+                        <span>Other:</span>
+                        <span id="otherExpense">0 Kč</span>
+                    </div>
+                    <div class="expense-item total">
+                        <span>TOTAL DISCRETIONARY:</span>
+                        <span id="totalDiscretionaryExpense">0 Kč</span>
+                    </div>
+                </div>
+                
+                <div class="expense-summary">
+                    <h4>FAMILY FINANCIAL HEALTH</h4>
+                    <div class="expense-item large">
+                        <span>TOTAL MONTHLY INCOME:</span>
+                        <span id="totalMonthlyIncome">0 Kč</span>
+                    </div>
+                    <div class="expense-item large">
+                        <span>TOTAL MONTHLY EXPENSES:</span>
+                        <span id="totalMonthlyExpenses">0 Kč</span>
+                    </div>
+                    <div class="expense-item large" id="netIncomeDisplay">
+                        <span>NET MONTHLY INCOME:</span>
+                        <span id="netMonthlyIncome">0 Kč</span>
+                    </div>
+                    <div class="expense-item large">
+                        <span>SAVINGS RATE:</span>
+                        <span id="savingsRate">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Member Modal -->
+    <div id="addMemberModal" class="modal">
+        <div class="modal-content">
+            <h3>ADD NEW FAMILY MEMBER</h3>
+            <form id="addMemberForm">
+                <div class="form-group">
+                    <label for="memberName">MEMBER NAME</label>
+                    <input type="text" id="memberName" required>
+                </div>
+                <div class="form-group">
+                    <label for="memberRole">ROLE</label>
+                    <select id="memberRole" required>
+                        <option value="">SELECT ROLE</option>
+                        <option value="Husband">HUSBAND</option>
+                        <option value="Wife">WIFE</option>
+                        <option value="Child">CHILD</option>
+                        <option value="Elderly">ELDERLY</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="memberAge">AGE</label>
+                    <input type="number" id="memberAge" min="0" max="120" required>
+                </div>
+                <div class="form-group">
+                    <label for="memberEmployment">EMPLOYMENT STATUS</label>
+                    <select id="memberEmployment" required>
+                        <option value="Employed">EMPLOYED</option>
+                        <option value="Unemployed">UNEMPLOYED</option>
+                        <option value="Student">STUDENT</option>
+                        <option value="Retired">RETIRED</option>
+                    </select>
+                </div>
+                <div class="form-group" id="incomeGroup">
+                    <label for="memberIncome">MONTHLY INCOME (Kč)</label>
+                    <input type="number" id="memberIncome" min="0" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="memberContribution">MONTHLY CONTRIBUTION (Kč)</label>
+                    <input type="number" id="memberContribution" min="0" value="0">
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeModal('addMemberModal')">CANCEL</button>
+                    <button type="submit" class="btn-submit">ADD MEMBER</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Add Mortgage Modal -->
+    <div id="addMortgageModal" class="modal">
+        <div class="modal-content">
+            <h3>ADD MORTGAGE AGREEMENT</h3>
+            <form id="addMortgageForm">
+                <div class="form-group">
+                    <label for="mortgageAmount">MORTGAGE AMOUNT (Kč)</label>
+                    <input type="number" id="mortgageAmount" min="100000" required>
+                </div>
+                <div class="form-group">
+                    <label for="interestRate">INTEREST RATE (%)</label>
+                    <input type="number" id="interestRate" min="0.1" max="20" step="0.01" value="5.5" required>
+                </div>
+                <div class="form-group">
+                    <label for="mortgageTerm">TERM (YEARS)</label>
+                    <input type="number" id="mortgageTerm" min="5" max="30" value="20" required>
+                </div>
+                <div class="form-group">
+                    <label for="startDate">START DATE</label>
+                    <input type="date" id="startDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="primaryBorrower">PRIMARY BORROWER</label>
+                    <select id="primaryBorrower" required>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="coBorrower">CO-BORROWER (OPTIONAL)</label>
+                    <select id="coBorrower">
+                        <option value="">NONE</option>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeModal('addMortgageModal')">CANCEL</button>
+                    <button type="submit" class="btn-submit">ADD MORTGAGE</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Expenses Modal -->
+    <div id="editExpensesModal" class="modal">
+        <div class="modal-content">
+            <h3 id="editExpensesTitle">EDIT EXPENSES</h3>
+            <form id="editExpensesForm">
+                <div id="expensesFormFields">
+                    <!-- Fields will be added dynamically -->
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeModal('editExpensesModal')">CANCEL</button>
+                    <button type="submit" class="btn-submit">SAVE CHANGES</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Family data structure
+        const familyData = {
+            id: "{{ family_id }}",
+            members: [],
+            mortgage: null,
+            expenses: {
+                fixed: {
+                    mortgage: 0,
+                    utilities: 2500,
+                    insurance: 1500
+                },
+                variable: {
+                    food: 6000,
+                    transport: 3000,
+                    education: 2000
+                },
+                discretionary: {
+                    entertainment: 1500,
+                    savings: 3000,
+                    other: 1000
+                }
+            }
+        };
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load data from server if exists
+            loadFamilyData();
+            
+            // Add member button event
+            document.getElementById('addMemberBtn').addEventListener('click', function() {
+                openModal('addMemberModal');
+            });
+            
+            // Add mortgage button event
+            document.getElementById('addMortgageBtn').addEventListener('click', function() {
+                if (familyData.members.length === 0) {
+                    alert("YOU MUST ADD FAMILY MEMBERS FIRST");
+                    return;
+                }
+                openModal('addMortgageModal');
+                populateBorrowerOptions();
+            });
+            
+            // Save data button event
+            document.getElementById('saveDataBtn').addEventListener('click', function() {
+                saveFamilyData();
+            });
+            
+            // Add member form submission
+            document.getElementById('addMemberForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addFamilyMember();
+            });
+            
+            // Add mortgage form submission
+            document.getElementById('addMortgageForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addMortgage();
+            });
+            
+            // Edit expenses form submission
+            document.getElementById('editExpensesForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveExpenseChanges();
+            });
+            
+            // Employment status change handler
+            document.getElementById('memberEmployment').addEventListener('change', function() {
+                const employment = this.value;
+                const incomeGroup = document.getElementById('incomeGroup');
+                
+                if (employment === 'Unemployed' || employment === 'Student' || employment === 'Retired') {
+                    document.getElementById('memberIncome').value = 0;
+                    incomeGroup.style.opacity = '0.5';
+                    incomeGroup.style.pointerEvents = 'none';
+                } else {
+                    incomeGroup.style.opacity = '1';
+                    incomeGroup.style.pointerEvents = 'auto';
+                }
+            });
+        });
+        
+        // Load family data from server
+        async function loadFamilyData() {
+            try {
+                const response = await fetch(`/api/families/${familyData.id}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data) {
+                        // Update familyData with loaded data
+                        familyData.members = data.members || [];
+                        familyData.mortgage = data.mortgage || null;
+                        familyData.expenses = data.expenses || {
+                            fixed: { mortgage: 0, utilities: 2500, insurance: 1500 },
+                            variable: { food: 6000, transport: 3000, education: 2000 },
+                            discretionary: { entertainment: 1500, savings: 3000, other: 1000 }
+                        };
+                        
+                        // Update UI
+                        updateMembersTable();
+                        updateMortgageDisplay();
+                        updateExpensesDisplay();
+                        
+                        console.log("Family data loaded successfully");
+                    }
+                } else {
+                    console.log("No existing data found, starting fresh");
+                }
+            } catch (error) {
+                console.error("Error loading family data:", error);
+            }
+        }
+        
+        // Save family data to server
+        async function saveFamilyData() {
+            try {
+                const response = await fetch(`/api/families/${familyData.id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(familyData)
+                });
+                
+                if (response.ok) {
+                    alert("FAMILY DATA SAVED SUCCESSFULLY");
+                } else {
+                    alert("ERROR SAVING FAMILY DATA");
+                }
+            } catch (error) {
+                console.error("Error saving family data:", error);
+                alert("NETWORK ERROR - DATA NOT SAVED");
+            }
+        }
+        
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            if (document.getElementById(modalId + 'Form')) {
+                document.getElementById(modalId + 'Form').reset();
+                delete document.getElementById(modalId + 'Form').dataset.editingId;
+                if (modalId === 'addMemberModal') {
+                    document.querySelector('#addMemberForm .btn-submit').textContent = 'ADD MEMBER';
+                }
+            }
+        }
+        
+        // Open edit expenses modal
+        function openEditExpensesModal(category) {
+            const modal = document.getElementById('editExpensesModal');
+            const title = document.getElementById('editExpensesTitle');
+            const formFields = document.getElementById('expensesFormFields');
+            
+            // Set title
+            title.textContent = `EDIT ${category.toUpperCase()} EXPENSES`;
+            
+            // Clear previous fields
+            formFields.innerHTML = '';
+            
+            // Add fields for each expense in the category
+            for (const expense in familyData.expenses[category]) {
+                const div = document.createElement('div');
+                div.className = 'form-group';
+                
+                const label = document.createElement('label');
+                label.textContent = expense.toUpperCase();
+                label.setAttribute('for', `edit_${expense}`);
+                
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.id = `edit_${expense}`;
+                input.value = familyData.expenses[category][expense];
+                input.min = '0';
+                input.step = '100';
+                
+                div.appendChild(label);
+                div.appendChild(input);
+                formFields.appendChild(div);
+            }
+            
+            // Store category in form for saving
+            document.getElementById('editExpensesForm').dataset.category = category;
+            
+            openModal('editExpensesModal');
+        }
+        
+        // Save expense changes
+        function saveExpenseChanges() {
+            const category = document.getElementById('editExpensesForm').dataset.category;
+            const expenses = familyData.expenses[category];
+            
+            for (const expense in expenses) {
+                const input = document.getElementById(`edit_${expense}`);
+                if (input) {
+                    expenses[expense] = parseFloat(input.value) || 0;
+                }
+            }
+            
+            updateExpensesDisplay();
+            closeModal('editExpensesModal');
+        }
+        
+        // Add family member
+        function addFamilyMember() {
+            const form = document.getElementById('addMemberForm');
+            const isEditing = form.dataset.editingId;
+            
+            const name = document.getElementById('memberName').value;
+            const role = document.getElementById('memberRole').value;
+            const age = parseInt(document.getElementById('memberAge').value);
+            const employment = document.getElementById('memberEmployment').value;
+            const income = parseFloat(document.getElementById('memberIncome').value) || 0;
+            const contribution = parseFloat(document.getElementById('memberContribution').value) || 0;
+            
+            if (isEditing) {
+                // Update existing member
+                const member = familyData.members.find(m => m.id == isEditing);
+                if (member) {
+                    member.name = name;
+                    member.role = role;
+                    member.age = age;
+                    member.employment = employment;
+                    member.income = income;
+                    member.contribution = contribution;
+                    member.lastActivity = new Date().toLocaleString();
+                }
+            } else {
+                // Add new member
+                const member = {
+                    id: Date.now(),
+                    name,
+                    role,
+                    age,
+                    employment,
+                    income,
+                    contribution,
+                    lastActivity: new Date().toLocaleString(),
+                    status: 'ACTIVE'
+                };
+                
+                familyData.members.push(member);
+            }
+            
+            updateMembersTable();
+            updateExpensesDisplay();
+            closeModal('addMemberModal');
+            
+            // Show confirmation
+            alert(`MEMBER ${name.toUpperCase()} ${isEditing ? 'UPDATED' : 'ADDED TO FAMILY UNIT'}`);
+        }
+        
+        // Update members table
+        function updateMembersTable() {
+            const tableBody = document.getElementById('membersTableBody');
+            tableBody.innerHTML = '';
+            
+            familyData.members.forEach(member => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${member.name.toUpperCase()} // ID: ${member.id}</td>
+                    <td><span class="member-role">${member.role.toUpperCase()}</span></td>
+                    <td>${member.age}</td>
+                    <td>${member.employment.toUpperCase()}</td>
+                    <td class="amount">${member.income.toLocaleString()} Kč</td>
+                    <td class="amount">${member.contribution.toLocaleString()} Kč</td>
+                    <td>${member.lastActivity}</td>
+                    <td style="color: var(--matrix-green);">${member.status}</td>
+                    <td>
+                        <button class="btn-small" onclick="editMember(${member.id})">EDIT</button>
+                        <button class="btn-small btn-danger" onclick="removeMember(${member.id})">REMOVE</button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Edit member
+        function editMember(id) {
+            const member = familyData.members.find(m => m.id === id);
+            if (!member) return;
+            
+            document.getElementById('memberName').value = member.name;
+            document.getElementById('memberRole').value = member.role;
+            document.getElementById('memberAge').value = member.age;
+            document.getElementById('memberEmployment').value = member.employment;
+            document.getElementById('memberIncome').value = member.income;
+            document.getElementById('memberContribution').value = member.contribution;
+            
+            // Change form to edit mode
+            const form = document.getElementById('addMemberForm');
+            form.dataset.editingId = id;
+            form.querySelector('.btn-submit').textContent = 'UPDATE MEMBER';
+            
+            openModal('addMemberModal');
+        }
+        
+        // Remove member
+        function removeMember(id) {
+            if (!confirm("CONFIRM REMOVAL OF THIS FAMILY MEMBER?")) return;
+            
+            familyData.members = familyData.members.filter(m => m.id !== id);
+            updateMembersTable();
+            updateExpensesDisplay();
+            
+            // If this member was involved in mortgage, update mortgage info
+            if (familyData.mortgage && 
+                (familyData.mortgage.primaryBorrower === id || familyData.mortgage.coBorrower === id)) {
+                updateMortgageDisplay();
+            }
+            
+            alert("MEMBER REMOVED FROM FAMILY UNIT");
+        }
+        
+        // Populate borrower options for mortgage
+        function populateBorrowerOptions() {
+            const primarySelect = document.getElementById('primaryBorrower');
+            const coSelect = document.getElementById('coBorrower');
+            
+            primarySelect.innerHTML = '';
+            coSelect.innerHTML = '<option value="">NONE</option>';
+            
+            familyData.members.forEach(member => {
+                if (member.employment === 'Employed') {
+                    const option1 = document.createElement('option');
+                    option1.value = member.id;
+                    option1.textContent = `${member.name} (${member.income} Kč)`;
+                    primarySelect.appendChild(option1);
+                    
+                    const option2 = document.createElement('option');
+                    option2.value = member.id;
+                    option2.textContent = `${member.name} (${member.income} Kč)`;
+                    coSelect.appendChild(option2);
+                }
+            });
+        }
+        
+        // Add mortgage
+        function addMortgage() {
+            const amount = parseFloat(document.getElementById('mortgageAmount').value);
+            const interestRate = parseFloat(document.getElementById('interestRate').value);
+            const term = parseInt(document.getElementById('mortgageTerm').value);
+            const startDate = document.getElementById('startDate').value;
+            const primaryBorrower = parseInt(document.getElementById('primaryBorrower').value);
+            const coBorrower = document.getElementById('coBorrower').value ? 
+                parseInt(document.getElementById('coBorrower').value) : null;
+            
+            // Calculate monthly payment
+            const monthlyRate = interestRate / 100 / 12;
+            const payments = term * 12;
+            const monthlyPayment = amount * 
+                (monthlyRate * Math.pow(1 + monthlyRate, payments)) / 
+                (Math.pow(1 + monthlyRate, payments) - 1);
+            
+            familyData.mortgage = {
+                amount,
+                interestRate,
+                term,
+                startDate,
+                monthlyPayment: monthlyPayment,
+                primaryBorrower,
+                coBorrower,
+                remainingBalance: amount,
+                paymentsMade: 0
+            };
+            
+            // Update fixed expenses
+            familyData.expenses.fixed.mortgage = monthlyPayment;
+            
+            updateMortgageDisplay();
+            updateExpensesDisplay();
+            closeModal('addMortgageModal');
+            
+            alert("MORTGAGE AGREEMENT REGISTERED\nMONTHLY PAYMENT: " + 
+                monthlyPayment.toFixed(2) + " Kč");
+        }
+        
+        // Update mortgage display
+        function updateMortgageDisplay() {
+            const mortgageInfo = document.getElementById('mortgageInfo');
+            
+            if (!familyData.mortgage) {
+                mortgageInfo.innerHTML = '<p class="no-mortgage">NO ACTIVE MORTGAGE RECORDED</p>';
+                return;
+            }
+            
+            const mortgage = familyData.mortgage;
+            const primary = familyData.members.find(m => m.id === mortgage.primaryBorrower);
+            const coBorrower = mortgage.coBorrower ? 
+                familyData.members.find(m => m.id === mortgage.coBorrower) : null;
+            
+            mortgageInfo.innerHTML = `
+                <div class="mortgage-details">
+                    <div class="mortgage-item">
+                        <span>PRINCIPAL:</span>
+                        <span>${mortgage.amount.toLocaleString()} Kč</span>
+                    </div>
+                    <div class="mortgage-item">
+                        <span>INTEREST RATE:</span>
+                        <span>${mortgage.interestRate}%</span>
+                    </div>
+                    <div class="mortgage-item">
+                        <span>TERM:</span>
+                        <span>${mortgage.term} YEARS</span>
+                    </div>
+                    <div class="mortgage-item highlight">
+                        <span>MONTHLY PAYMENT:</span>
+                        <span>${mortgage.monthlyPayment.toFixed(2)} Kč</span>
+                    </div>
+                    <div class="mortgage-item">
+                        <span>PRIMARY BORROWER:</span>
+                        <span>${primary.name.toUpperCase()}</span>
+                    </div>
+                    ${coBorrower ? `
+                    <div class="mortgage-item">
+                        <span>CO-BORROWER:</span>
+                        <span>${coBorrower.name.toUpperCase()}</span>
+                    </div>
+                    ` : ''}
+                    <div class="mortgage-item">
+                        <span>START DATE:</span>
+                        <span>${new Date(mortgage.startDate).toLocaleDateString()}</span>
+                    </div>
+                    <div class="mortgage-item">
+                        <span>REMAINING BALANCE:</span>
+                        <span>${mortgage.remainingBalance.toLocaleString()} Kč</span>
+                    </div>
+                    <div class="mortgage-actions">
+                        <button class="btn-small" onclick="makeMortgagePayment()">MAKE PAYMENT</button>
+                        <button class="btn-small btn-danger" onclick="removeMortgage()">REMOVE MORTGAGE</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Make mortgage payment
+        function makeMortgagePayment() {
+            if (!familyData.mortgage) return;
+            
+            const mortgage = familyData.mortgage;
+            const monthlyPayment = mortgage.monthlyPayment;
+            
+            // Check if family has enough funds
+            const totalIncome = familyData.members.reduce((sum, member) => sum + member.income, 0);
+            const totalExpenses = calculateTotalExpenses();
+            
+            if (totalIncome - totalExpenses < monthlyPayment) {
+                alert("INSUFFICIENT FUNDS FOR MORTGAGE PAYMENT");
+                return;
+            }
+            
+            // Apply payment
+            mortgage.paymentsMade++;
+            mortgage.remainingBalance -= monthlyPayment;
+            
+            // If remaining balance is negative, set to 0
+            if (mortgage.remainingBalance < 0) {
+                mortgage.remainingBalance = 0;
+            }
+            
+            updateMortgageDisplay();
+            updateExpensesDisplay();
+            alert(`MORTGAGE PAYMENT OF ${monthlyPayment.toFixed(2)} Kč PROCESSED\nREMAINING BALANCE: ${mortgage.remainingBalance.toLocaleString()} Kč`);
+        }
+        
+        // Remove mortgage
+        function removeMortgage() {
+            if (!confirm("CONFIRM REMOVAL OF MORTGAGE AGREEMENT?")) return;
+            
+            familyData.mortgage = null;
+            familyData.expenses.fixed.mortgage = 0;
+            updateMortgageDisplay();
+            updateExpensesDisplay();
+            alert("MORTGAGE AGREEMENT REMOVED");
+        }
+        
+        // Calculate total expenses
+        function calculateTotalExpenses() {
+            let total = 0;
+            
+            // Add fixed expenses
+            for (const key in familyData.expenses.fixed) {
+                total += familyData.expenses.fixed[key];
+            }
+            
+            // Add variable expenses
+            for (const key in familyData.expenses.variable) {
+                total += familyData.expenses.variable[key];
+            }
+            
+            // Add discretionary expenses
+            for (const key in familyData.expenses.discretionary) {
+                total += familyData.expenses.discretionary[key];
+            }
+            
+            return total;
+        }
+        
+        // Update expenses display
+        function updateExpensesDisplay() {
+            // Update fixed expenses
+            document.getElementById('mortgageExpense').textContent = 
+                familyData.expenses.fixed.mortgage.toLocaleString() + ' Kč';
+            document.getElementById('utilitiesExpense').textContent = 
+                familyData.expenses.fixed.utilities.toLocaleString() + ' Kč';
+            document.getElementById('insuranceExpense').textContent = 
+                familyData.expenses.fixed.insurance.toLocaleString() + ' Kč';
+            document.getElementById('totalFixedExpense').textContent = 
+                (familyData.expenses.fixed.mortgage + 
+                 familyData.expenses.fixed.utilities + 
+                 familyData.expenses.fixed.insurance).toLocaleString() + ' Kč';
+            
+            // Update variable expenses
+            document.getElementById('foodExpense').textContent = 
+                familyData.expenses.variable.food.toLocaleString() + ' Kč';
+            document.getElementById('transportExpense').textContent = 
+                familyData.expenses.variable.transport.toLocaleString() + ' Kč';
+            document.getElementById('educationExpense').textContent = 
+                familyData.expenses.variable.education.toLocaleString() + ' Kč';
+            document.getElementById('totalVariableExpense').textContent = 
+                (familyData.expenses.variable.food + 
+                 familyData.expenses.variable.transport + 
+                 familyData.expenses.variable.education).toLocaleString() + ' Kč';
+            
+            // Update discretionary expenses
+            document.getElementById('entertainmentExpense').textContent = 
+                familyData.expenses.discretionary.entertainment.toLocaleString() + ' Kč';
+            document.getElementById('savingsExpense').textContent = 
+                familyData.expenses.discretionary.savings.toLocaleString() + ' Kč';
+            document.getElementById('otherExpense').textContent = 
+                familyData.expenses.discretionary.other.toLocaleString() + ' Kč';
+            document.getElementById('totalDiscretionaryExpense').textContent = 
+                (familyData.expenses.discretionary.entertainment + 
+                 familyData.expenses.discretionary.savings + 
+                 familyData.expenses.discretionary.other).toLocaleString() + ' Kč';
+            
+            // Calculate totals
+            const totalIncome = familyData.members.reduce((sum, member) => sum + member.income, 0);
+            const totalExpenses = calculateTotalExpenses();
+            const netIncome = totalIncome - totalExpenses;
+            const savingsRate = totalIncome > 0 ? 
+                (familyData.expenses.discretionary.savings / totalIncome * 100) : 0;
+            
+            // Update summary
+            document.getElementById('totalMonthlyIncome').textContent = 
+                totalIncome.toLocaleString() + ' Kč';
+            document.getElementById('totalMonthlyExpenses').textContent = 
+                totalExpenses.toLocaleString() + ' Kč';
+            document.getElementById('netMonthlyIncome').textContent = 
+                netIncome.toLocaleString() + ' Kč';
+            document.getElementById('savingsRate').textContent = 
+                savingsRate.toFixed(1) + '%';
+            
+            // Style net income based on value
+            const netIncomeDisplay = document.getElementById('netIncomeDisplay');
+            if (netIncome < 0) {
+                netIncomeDisplay.style.color = 'var(--neon-pink)';
+                netIncomeDisplay.style.textShadow = '0 0 5px var(--neon-pink)';
+            } else {
+                netIncomeDisplay.style.color = 'var(--matrix-green)';
+                netIncomeDisplay.style.textShadow = '0 0 5px var(--matrix-green)';
+            }
+        }
+        
+        function showHackerMessage() {
+            alert("DEBUG MODE ACTIVATED\nSYSTEM INTEGRITY VERIFIED");
+        }
+    </script>
+</body>
+</html>

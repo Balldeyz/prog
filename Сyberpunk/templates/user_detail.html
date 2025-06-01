@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FINANČNÍ DENÍK | UŽIVATELSKÝ PROFIL</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .currency-balance-display {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--neon-blue);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        .currency-balance-item {
+            color: var(--matrix-green);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+        }
+        .user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--matrix-green);
+    padding: 1.5rem;
+    border-radius: 10px;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.user-name {
+    font-size: 1.5rem;
+    color: var(--matrix-green);
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.user-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: flex-start;
+}
+
+.detail-item {
+    flex: 1 1 250px; /* адаптивна ширина */
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--matrix-green);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 200px;
+    max-width: 100%;
+    box-shadow: 0 0 10px rgba(0,255,0,0.3);
+}
+
+.detail-label {
+    color: var(--matrix-green);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    font-family: monospace;
+}
+
+.detail-value {
+    font-size: 1.1rem;
+    color: #00ffcc;
+    font-weight: bold;
+    word-wrap: break-word;
+    font-family: 'Orbitron', sans-serif;
+}
+
+#converter-result {
+    flex-basis: 100%;
+    margin-top: 1rem;
+    border-top: 1px dashed var(--matrix-green);
+    padding-top: 1rem;
+}
+
+.result-label {
+    font-size: 1rem;
+    color: #00ffaa;
+    margin-bottom: 0.2rem;
+}
+
+.result-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+    </style>
+</head>
+<body>
+    <div class="glitch-container"></div>
+    <div class="terminal-effect"></div>
+    
+    <!-- Animated Background -->
+    <div class="currency-bg" id="currencyBg"></div>
+    
+    <!-- System Status Indicators -->
+    <div class="digital-clock" id="digitalClock">00:00:00</div>
+    
+    <!-- Audio Visualizer -->
+    <div class="audio-visualizer">
+        <div class="visualizer-bar" style="--i: 0"></div>
+        <div class="visualizer-bar" style="--i: 1"></div>
+        <div class="visualizer-bar" style="--i: 2"></div>
+        <div class="visualizer-bar" style="--i: 3"></div>
+        <div class="visualizer-bar" style="--i: 4"></div>
+        <div class="visualizer-bar" style="--i: 5"></div>
+        <div class="visualizer-bar" style="--i: 6"></div>
+        <div class="visualizer-bar" style="--i: 7"></div>
+        <div class="visualizer-bar" style="--i: 8"></div>
+        <div class="visualizer-bar" style="--i: 9"></div>
+    </div>
+   
+    <!-- Currency Ticker -->
+    <div class="crypto-ticker">
+        <div class="ticker-content" id="currencyTicker">
+            USD: 22.50 Kč (+0.8%) • EUR: 24.20 Kč (-0.3%) • GBP: 28.80 Kč (+1.2%) • JPY: 0.15 Kč (+0.5%) • BTC: 870,000 Kč (+3.2%) • ZLATO: 1,450 Kč/g (-0.9%) • BURZOVNÍ INDEX: 1,425.6 (+1.8%) • 
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Dynamic Currency Balances Display -->
+        <div class="currency-balance-display" id="currencyBalanceDisplay">
+            <div class="currency-balance-item">CZK: {{ "{:,.2f}".format(user.salary).replace(",", " ").replace(".", ",") }} Kč</div>
+        </div>
+
+        <div class="header">
+            <h1>UŽIVATELSKÝ FINANČNÍ PROFIL // ÚROVEŇ PŘÍSTUPU: {{ ['STANDARDNÍ','PREMIUM','OBCHODNÍ','ADMINISTRÁTOR']|random }}</h1>
+            <div>
+                <a href="{{ url_for('export_data', user_id=user.id) }}" class="btn">EXPORT DAT</a>
+                <button class="btn" onclick="toggleConsole()" style="margin-left: 1rem;">SYSTÉMOVÁ KONZOLE</button>
+                <a href="http://192.168.37.23:5002" class="btn" style="margin-left: 1rem;">RODINNÁ PENĚŽENKA</a>
+            </div>
+        </div>
+        
+        <div class="user-info">
+            <div class="user-name">{{ user.first_name|upper }} {{ user.last_name|upper }} // ID: {{ "%08d"|format(user.id) }}</div>
+            <div class="user-details">
+                <div class="detail-item">
+                    <span class="detail-label">ZAMĚSTNAVATEL</span>
+                    <div class="detail-value">{{ user.workplace or 'NEURČENO' }}</div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">ÚROVEŇ BEZPEČNOSTI</span>
+                    <div class="detail-value">{{ ['ZÁKLADNÍ','STANDARDNÍ','POKROČILÁ','ADMINISTRÁTOR']|random }}</div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">MĚSÍČNÍ PŘÍJEM</span>
+                    <div class="detail-value">{{ "{:,.2f}".format(user.salary).replace(",", " ").replace(".", ",") }} Kč</div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">BONITA</span>
+                    <div class="detail-value">{{ ['VÝBORNÁ','DOBRÁ','PRŮMĚRNÁ','ŠPATNÁ']|random }}</div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">CELKOVÉ VÝDAJE</span>
+                    <div class="detail-value">{{ "{:,.2f}".format(expenses|sum(attribute='amount')).replace(",", " ").replace(".", ",") }} Kč</div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">ZŮSTATEK</span>
+                    <div class="detail-value">{{ "{:,.2f}".format(user.salary - (expenses|sum(attribute='amount'))).replace(",", " ").replace(".", ",") }} Kč</div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">POSLEDNÍ PŘIHLÁŠENÍ</span>
+                    <div class="detail-value">{{ ["24.05.2023 03:42","25.05.2023 14:23","26.05.2023 08:15","27.05.2023 19:37"]|random }}</div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">STAV ÚČTU</span>
+                    <div class="detail-value" style="color: var(--matrix-green);">{{ ['AKTIVNÍ','ČEKÁ NA SCHVÁLENÍ','OMEZENÝ','VIP']|random }}</div>
+                </div>
+                <div class="detail-item" id="converter-result">
+                 <div class="result-label">VÝSLEDEK:</div>
+                 <div class="result-value">0.00</div>
+        </div>
+            </div>
+            
+            <div class="balance-meter">
+                <div class="balance-fill"></div>
+            </div>
+        </div>
+        
+        {% if chart %}
+        <div class="chart-container">
+            <h3 class="chart-title">ANALÝZA VÝDAJŮ // AKTUÁLNÍ MĚSÍC</h3>
+            <img src="data:image/png;base64,{{ chart }}" alt="Graf výdajů" class="chart-img" id="expenseChart">
+            <div style="margin-top: 1rem; text-align: right;">
+                <button class="btn" onclick="refreshChart()" style="padding: 0.5rem 1rem; font-size: 0.9rem;">OBNOVIT DATA</button>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="expense-form">
+            <h3 class="form-title">PŘIDAT NOVOU TRANSAKCI</h3>
+            <form method="POST" id="expenseForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="category">KATEGORIE</label>
+                        <select id="category" name="category" required>
+                            <option value="">VYBER KATEGORII</option>
+                            <option value="Food">JÍDLO</option>
+                            <option value="Transport">DOPRAVA</option>
+                            <option value="Housing">BYDLENÍ</option>
+                            <option value="Utilities">SLUŽBY</option>
+                            <option value="Entertainment">ZÁBAVA</option>
+                            <option value="Health">ZDRAVÍ</option>
+                            <option value="Education">VZDĚLÁNÍ</option>
+                            <option value="Shopping">NAKUPY</option>
+                            <option value="Investments">INVESTICE</option>
+                            <option value="Other">JINÉ</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="amount">ČÁSTKA (Kč)</label>
+                        <input type="number" id="amount" name="amount" step="0.01" min="0" required placeholder="0.00">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="description">POPIS (VOLITELNÝ)</label>
+                        <input type="text" id="description" name="description" placeholder="ZADEJTE PODROBNOSTI TRANSAKCE">
+                    </div>
+                    <div class="form-group">
+                        <label for="location">LOKALITA</label>
+                        <input type="text" id="location" name="location" placeholder="MĚSTO/OBCHOD">
+                    </div>
+                    <div class="form-group">
+                        <label for="priority">PRIORITA</label>
+                        <select id="priority" name="priority">
+                            <option value="Low">NÍZKÁ</option>
+                            <option value="Medium" selected>STŘEDNÍ</option>
+                            <option value="High">VYSOKÁ</option>
+                            <option value="Critical">KRITICKÁ</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn">PŘIDAT TRANSAKCI</button>
+            </form>
+        </div>
+        
+        <div class="expense-list">
+            <h3 class="list-title">HISTORIE TRANSAKCÍ</h3>
+            {% if expenses %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>DATUM/ČAS</th>
+                        <th>KATEGORIE</th>
+                        <th>ČÁSTKA</th>
+                        <th>POPIS</th>
+                        <th>STAV</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                    <tr>
+                        <td>{{ expense.date.strftime('%d.%m.%Y %H:%M') }}</td>
+                        <td><span class="expense-category">{{ expense.category }}</span></td>
+                        <td class="amount">{{ "{:,.2f}".format(expense.amount).replace(",", " ").replace(".", ",") }} Kč</td>
+                        <td>{{ expense.description or 'BEZ POPISU' }}</td>
+                        <td>{{ ['DOKONČENO','ČEKÁ NA ZPRACOVÁNÍ','OVĚŘENO']|random }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color: var(--neon-blue); text-align: center; padding: 2rem;">ŽÁDNÉ TRANSAKCE NEJSOU ZAZNAMENÁNY</p>
+            {% endif %}
+            
+            <div style="margin-top: 2rem; text-align: center;">
+                <button class="btn" onclick="showAllTransactions()" style="padding: 0.7rem 1.4rem;">NAČÍST DALŠÍ TRANSAKCE</button>
+            </div>
+        </div>
+        
+        <a href="{{ url_for('main_menu') }}" class="back-link">VRÁTIT SE NA SEZNAM UŽIVATELŮ</a>
+    </div>
+    
+    <!-- Logo -->
+    <svg class="cyber-logo" onclick="showHackerMessage()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <path fill="var(--neon-pink)" d="M50 10L20 50l30 40 30-40z"/>
+        <path fill="var(--neon-blue)" d="M50 10l30 40H20z"/>
+        <path fill="var(--matrix-green)" d="M35 40l15 20 15-20z"/>
+    </svg>
+    
+    <!-- Hidden Message -->
+    <div class="hacker-message" id="hackerMessage">
+        <p>"SYSTÉMOVÁ BEZPEČNOST AKTIVNÍ"</p>
+        <p>"VŠECHNY TRANSAKCE JSOU MONITOROVÁNY"</p>
+        <p>"PROBLÉMY HLASTE ADMINISTRÁTOROVI"</p>
+        <button onclick="hideHackerMessage()">[ ZAVŘÍT ]</button>
+    </div>
+    
+    <!-- System Console -->
+    <div id="secretConsole">
+        <div id="consoleOutput"></div>
+        <div class="console-input">
+            <span class="console-prompt">>_</span>
+            <input type="text" id="consoleInput" autocomplete="off">
+        </div>
+    </div>
+     
+    <div class="currency-converter">
+        <h3 class="converter-title">SMĚNÁRNÍ KURZY</h3>
+        <div class="converter-grid">
+            <div class="converter-group">
+                <label for="amount">ČÁSTKA</label>
+                <input type="number" id="converter-amount" value="100" min="0">
+            </div>
+            <div class="converter-group">
+                <label for="from-currency">Z</label>
+                <select id="from-currency">
+                    <option value="CZK" selected>KORUNA (CZK)</option>
+                    <option value="USD">DOLLAR (USD)</option>
+                    <option value="EUR">EURO (EUR)</option>
+                    <option value="GBP">LIBRA (GBP)</option>
+                    <option value="JPY">JEN (JPY)</option>
+                </select>
+            </div>
+            <div class="converter-group">
+                <label for="to-currency">NA</label>
+                <select id="to-currency">
+                    <option value="USD">DOLLAR (USD)</option>
+                    <option value="EUR" selected>EURO (EUR)</option>
+                    <option value="CZK">KORUNA (CZK)</option>
+                    <option value="GBP">LIBRA (GBP)</option>
+                    <option value="JPY">JEN (JPY)</option>
+                </select>
+            </div>
+            <div class="converter-group">
+                <button id="convert-btn" class="btn">PŘEVÉST</button>
+            </div>
+        </div>
+        <div class="exchange-rates">
+            <div class="rate-item">1 USD = 22.50 Kč</div>
+            <div class="rate-item">1 EUR = 24.20 Kč</div>
+            <div class="rate-item">1 GBP = 28.80 Kč</div>
+        </div>
+    </div>
+    
+    <script>
+        // Exchange rates (could be fetched from API)
+        const exchangeRates = {
+            'CZK': { 'USD': 1/22.50, 'EUR': 1/24.20, 'GBP': 1/28.80, 'JPY': 1/0.15, 'CZK': 1 },
+            'USD': { 'CZK': 22.50, 'EUR': 22.50/24.20, 'GBP': 22.50/28.80, 'JPY': 22.50/0.15, 'USD': 1 },
+            'EUR': { 'CZK': 24.20, 'USD': 24.20/22.50, 'GBP': 24.20/28.80, 'JPY': 24.20/0.15, 'EUR': 1 },
+            'GBP': { 'CZK': 28.80, 'USD': 28.80/22.50, 'EUR': 28.80/24.20, 'JPY': 28.80/0.15, 'GBP': 1 },
+            'JPY': { 'CZK': 0.15, 'USD': 0.15/22.50, 'EUR': 0.15/24.20, 'GBP': 0.15/28.80, 'JPY': 1 }
+        };
+
+        // Store user's balances in different currencies
+       const userBalances = {
+    'CZK': parseFloat("{{ user.salary - (expenses|sum(attribute='amount')) }}"),
+    'USD': 0,
+    'EUR': 0,
+    'GBP': 0,
+    'JPY': 0
+};
+
+
+
+        // Format number with spaces for thousands
+        function formatNumberWithSpaces(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        }
+
+        // Update currency balances display
+        function updateCurrencyBalances() {
+            const balanceDisplay = document.getElementById('currencyBalanceDisplay');
+            balanceDisplay.innerHTML = '';
+            
+            for (const [currency, balance] of Object.entries(userBalances)) {
+                if (balance > 0) {
+                    const formattedBalance = formatNumberWithSpaces(balance.toFixed(2)).replace('.', ',');
+                    const balanceItem = document.createElement('div');
+                    balanceItem.className = 'currency-balance-item';
+                    
+                    if (currency === 'CZK') {
+                        balanceItem.textContent = `${currency}: ${formattedBalance} Kč`;
+                    } else if (currency === 'USD') {
+                        balanceItem.textContent = `${currency}: ${formattedBalance} $`;
+                    } else if (currency === 'EUR') {
+                        balanceItem.textContent = `${currency}: ${formattedBalance} €`;
+                    } else if (currency === 'GBP') {
+                        balanceItem.textContent = `${currency}: ${formattedBalance} £`;
+                    } else if (currency === 'JPY') {
+                        balanceItem.textContent = `${currency}: ${formattedBalance} ¥`;
+                    }
+                    
+                    balanceDisplay.appendChild(balanceItem);
+                }
+            }
+        }
+
+        // Conversion function
+        function convertCurrency() {
+            const amount = parseFloat(document.getElementById('converter-amount').value);
+            const fromCurrency = document.getElementById('from-currency').value;
+            const toCurrency = document.getElementById('to-currency').value;
+            
+            if (isNaN(amount) || amount < 0) {
+                document.getElementById('converter-result').style.borderColor = 'var(--neon-pink)';
+                document.querySelector('.result-value').textContent = 'NEVALIDNÍ VSTUP';
+                return;
+            }
+            
+            const rate = exchangeRates[fromCurrency][toCurrency];
+            const result = amount * rate;
+            
+            // Update user's balance in the target currency
+            if (fromCurrency === 'CZK' && toCurrency !== 'CZK') {
+                userBalances[toCurrency] = (userBalances[toCurrency] || 0) + result;
+                updateCurrencyBalances();
+            }
+            
+            document.querySelector('.result-value').textContent = formatNumberWithSpaces(result.toFixed(2)).replace('.', ',') + ' ' + toCurrency;
+            document.getElementById('converter-result').style.borderColor = 'var(--matrix-green)';
+            
+            // Animation
+            const resultElement = document.querySelector('.result-value');
+            resultElement.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                resultElement.style.transform = 'scale(1)';
+            }, 300);
+        }
+
+        // Event handlers for converter
+        document.getElementById('convert-btn').addEventListener('click', convertCurrency);
+        
+        document.getElementById('converter-amount').addEventListener('input', () => {
+            if (document.getElementById('converter-amount').value.length > 0) {
+                convertCurrency();
+            }
+        });
+        
+        document.getElementById('from-currency').addEventListener('change', convertCurrency);
+        document.getElementById('to-currency').addEventListener('change', convertCurrency);
+
+        // Initialize converter on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Calculate initial balances in other currencies
+            userBalances['USD'] = userBalances['CZK'] * exchangeRates['CZK']['USD'];
+            userBalances['EUR'] = userBalances['CZK'] * exchangeRates['CZK']['EUR'];
+            userBalances['GBP'] = userBalances['CZK'] * exchangeRates['CZK']['GBP'];
+            userBalances['JPY'] = userBalances['CZK'] * exchangeRates['CZK']['JPY'];
+            
+            updateCurrencyBalances();
+            convertCurrency();
+            
+            // Update rates every 30 seconds (simulation)
+            setInterval(updateExchangeRates, 30000);
+        });
+
+        // Function to update exchange rates (could connect to real API)
+        function updateExchangeRates() {
+            // Simulate rate fluctuations
+            const fluctuation = 0.95 + Math.random() * 0.1; // -5% to +5%
+            
+            exchangeRates['USD']['CZK'] *= fluctuation;
+            exchangeRates['CZK']['USD'] = 1 / exchangeRates['USD']['CZK'];
+            
+            exchangeRates['EUR']['CZK'] *= fluctuation;
+            exchangeRates['CZK']['EUR'] = 1 / exchangeRates['EUR']['CZK'];
+            
+            // Update displayed rates
+            document.querySelectorAll('.rate-item')[0].textContent = 
+                `1 USD = ${exchangeRates['USD']['CZK'].toFixed(2)} Kč`;
+            
+            document.querySelectorAll('.rate-item')[1].textContent = 
+                `1 EUR = ${exchangeRates['EUR']['CZK'].toFixed(2)} Kč`;
+            
+            // Re-convert to update result
+            convertCurrency();
+            
+            // Visual effect
+            const rates = document.querySelectorAll('.rate-item');
+            rates.forEach(rate => {
+                rate.style.color = 'var(--neon-pink)';
+                setTimeout(() => {
+                    rate.style.color = 'var(--neon-blue)';
+                }, 1000);
+            });
+        }
+
+        // Create floating currency symbols
+        function createCurrency() {
+            const symbols = ['$', '€', '£', '¥', 'Kč', '₽', '₹', '₿'];
+            const currencyBg = document.getElementById('currencyBg');
+            
+            // Clear existing symbols
+            currencyBg.innerHTML = '';
+            
+            // Create 50 symbols
+            for (let i = 0; i < 50; i++) {
+                const currency = document.createElement('div');
+                currency.className = 'currency';
+                currency.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                currency.style.left = `${Math.random() * 100}%`;
+                currency.style.fontSize = `${Math.random() * 24 + 12}px`;
+                currency.style.animationDuration = `${Math.random() * 25 + 10}s`;
+                currency.style.animationDelay = `${Math.random() * 10}s`;
+                currency.style.opacity = `${Math.random() * 0.5 + 0.3}`;
+                currencyBg.appendChild(currency);
+            }
+        }
+        
+        // Update digital clock
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('digitalClock').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        
+        // Easter egg message
+        function showHackerMessage() {
+            const messages = [
+                "SYSTÉMOVÁ BEZPEČNOST: AKTIVNÍ",
+                "VŠECHNY TRANSAKCE JSOU LOGOVÁNY",
+                "PROBLÉMY HLASTE ADMINISTRÁTOROVI",
+                "SYSTÉM FUNGUJE NORMÁLNĚ"
+            ];
+            
+            const hackerMessage = document.getElementById('hackerMessage');
+            hackerMessage.querySelectorAll('p')[0].textContent = `"${messages[Math.floor(Math.random() * messages.length)]}"`;
+            hackerMessage.querySelectorAll('p')[1].textContent = `"${messages[Math.floor(Math.random() * messages.length)]}"`;
+            hackerMessage.querySelectorAll('p')[2].textContent = `"${messages[Math.floor(Math.random() * messages.length)]}"`;
+            
+            hackerMessage.style.display = 'block';
+        }
+        
+        function hideHackerMessage() {
+            document.getElementById('hackerMessage').style.display = 'none';
+        }
+        
+        // Toggle system console
+        function toggleConsole() {
+            const console = document.getElementById('secretConsole');
+            console.classList.toggle('active');
+            
+            if (console.classList.contains('active')) {
+                document.getElementById('consoleInput').focus();
+                addConsoleOutput("> SYSTÉMOVÁ KONZOLE AKTIVOVÁNA");
+                addConsoleOutput("> UŽIVATEL: {{ user.first_name|upper }}");
+                addConsoleOutput("> POSLEDNÍ PŘIHLÁŠENÍ: " + new Date().toLocaleString());
+                addConsoleOutput("> NAPIŠTE 'HELP' PRO SEZNAM PŘÍKAZŮ");
+            }
+        }
+        
+        // Add text to console output
+        function addConsoleOutput(text) {
+            const output = document.getElementById('consoleOutput');
+            const p = document.createElement('p');
+            p.textContent = text;
+            output.appendChild(p);
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        // Handle console commands
+        function handleConsoleCommand(command) {
+            command = command.toLowerCase().trim();
+            addConsoleOutput("> " + command);
+            
+            if (command === 'help') {
+                addConsoleOutput("> DOSTUPNÉ PŘÍKAZY:");
+                addConsoleOutput("> CLEAR - VYČISTÍ KONZOLI");
+                addConsoleOutput("> STATUS - STAV SYSTÉMU");
+                addConsoleOutput("> USER - INFORMACE O UŽIVATELI");
+                addConsoleOutput("> RATES - SMĚNNÉ KURZY");
+                addConsoleOutput("> EXIT - ZAVŘE KONZOLI");
+            } 
+            else if (command === 'clear') {
+                document.getElementById('consoleOutput').innerHTML = '';
+            }
+            else if (command === 'status') {
+                addConsoleOutput("> STAV SYSTÉMU:");
+                addConsoleOutput("> CPU: " + (Math.random() * 30 + 10).toFixed(1) + "%");
+                addConsoleOutput("> PAMĚŤ: " + (Math.random() * 40 + 30).toFixed(1) + "%");
+                addConsoleOutput("> BEZPEČNOST: NORMÁLNÍ");
+            }
+            else if (command === 'user') {
+                addConsoleOutput("> INFORMACE O UŽIVATELI:");
+                addConsoleOutput("> JMÉNO: {{ user.first_name | upper }} {{ user.last_name | upper }}");
+                addConsoleOutput("> ID: {{ '%08d' % user.id }}");
+                addConsoleOutput("> ZŮSTATEK: {{ (user.salary - (expenses | sum(attribute='amount'))) | round(2) }} Kč");
+            }
+            else if (command === 'rates') {
+                addConsoleOutput("> AKTUÁLNÍ KURZY:");
+                addConsoleOutput("> USD: " + exchangeRates['USD']['CZK'].toFixed(2) + " Kč");
+                addConsoleOutput("> EUR: " + exchangeRates['EUR']['CZK'].toFixed(2) + " Kč");
+                addConsoleOutput("> GBP: " + exchangeRates['GBP']['CZK'].toFixed(2) + " Kč");
+            }
+            else if (command === 'exit') {
+                toggleConsole();
+            }
+            else {
+                addConsoleOutput("> CHYBA: NEZNÁMÝ PŘÍKAZ");
+                addConsoleOutput("> NAPIŠTE 'HELP' PRO SEZNAM PŘÍKAZŮ");
+            }
+        }
+        
+        // Refresh chart animation
+        function refreshChart() {
+            const chart = document.getElementById('expenseChart');
+            chart.style.opacity = '0.5';
+            setTimeout(() => {
+                chart.style.opacity = '1';
+                chart.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    chart.style.transform = 'scale(1)';
+                }, 300);
+            }, 500);
+        }
+        
+        // Show all transactions (simulated)
+        function showAllTransactions() {
+            alert("NAČÍTÁNÍ DALŠÍCH TRANSAKCÍ...");
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            createCurrency();
+            updateClock();
+            setInterval(updateClock, 1000);
+            setInterval(createCurrency, 30000); // Refresh currency every 30 seconds
+            
+            // Add effects to inputs on focus
+            document.querySelectorAll('input, select').forEach(el => {
+                el.addEventListener('focus', function() {
+                    this.style.boxShadow = '0 0 15px var(--neon-pink)';
+                    this.style.transform = 'translateY(-2px)';
+                });
+                el.addEventListener('blur', function() {
+                    this.style.boxShadow = 'inset 0 0 10px rgba(0, 240, 255, 0.1)';
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+            
+            // Handle console input
+            document.getElementById('consoleInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleConsoleCommand(this.value);
+                    this.value = '';
+                }
+            });
+            
+            // Random glitch effect on chart
+            const chart = document.getElementById('expenseChart');
+            if (chart) {
+                setInterval(() => {
+                    if (Math.random() > 0.9) {
+                        chart.style.filter = 'contrast(1.5) brightness(1.2)';
+                        setTimeout(() => {
+                            chart.style.filter = 'none';
+                        }, 300);
+                    }
+                }, 5000);
+            }
+            
+            // Animate form submission
+            const form = document.getElementById('expenseForm');
+            if (form) {
+                form.addEventListener('submit', function() {
+                    const btn = this.querySelector('button[type="submit"]');
+                    btn.textContent = "PROCESUJI...";
+                    btn.style.background = "linear-gradient(135deg, var(--neon-blue) 0%, var(--matrix-green) 100%)";
+                    
+                    setTimeout(() => {
+                        btn.textContent = "PŘIDAT TRANSAKCI";
+                        btn.style.background = "linear-gradient(135deg, var(--neon-purple) 0%, var(--neon-pink) 100%)";
+                    }, 2000);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

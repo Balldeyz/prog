@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>RODINNÁ PENĚŽENKA | CYBER ADMIN</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .highlight {
+            color: var(--matrix-green);
+            font-weight: bold;
+        }
+        
+        .calculation-note {
+            display: block;
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-top: 0.2rem;
+        }
+        
+        .info-box {
+            background-color: rgba(0, 100, 0, 0.1);
+            border-left: 4px solid var(--matrix-green);
+            padding: 1rem;
+            margin-top: 1.5rem;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .info-box h4 {
+            margin-top: 0;
+            color: var(--matrix-green);
+        }
+        
+        .info-box ul {
+            padding-left: 1.5rem;
+        }
+        
+        .child-expenses {
+            background-color: rgba(0, 100, 0, 0.05);
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+        }
+        
+        /* Mortgage schedule styles */
+        .mortgage-schedule {
+            margin-top: 2rem;
+            border-top: 1px solid #333;
+            padding-top: 1rem;
+        }
+        
+        .schedule-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #444;
+        }
+        
+        .schedule-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #333;
+        }
+        
+        .schedule-row:hover {
+            background-color: rgba(0, 100, 0, 0.05);
+        }
+        
+        .schedule-col {
+            flex: 1;
+            text-align: right;
+        }
+        
+        .schedule-col:first-child {
+            text-align: left;
+            flex: 0.5;
+        }
+        
+        .schedule-summary {
+            margin-top: 1.5rem;
+            background-color: rgba(0, 100, 0, 0.1);
+            padding: 1rem;
+            border-radius: 4px;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .summary-total {
+            font-weight: bold;
+            border-top: 1px solid #444;
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Akce Finančního zdraví */
+        .fh-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .fh-actions .btn-small {
+            background-color: var(--matrix-green);
+            color: #051;
+            border: none;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 8px rgba(0,255,65,0.3);
+            transition: background 0.2s, transform 0.1s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .fh-actions .btn-small i {
+            font-size: 1.1rem;
+        }
+        .fh-actions .btn-small:hover {
+            background-color: #27ff62;
+            transform: translateY(-1px);
+        }
+        .fh-actions .btn-small:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 4px rgba(0,255,65,0.3);
+        }
+
+        /* Toast zpráva */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 6px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>RODINNÁ PENĚŽENKA // ID: {{ family_id }}</h1>
+            <div>
+                <button class="btn" onclick="window.location.href='/add_member'">PŘIDAT ČLENA</button>
+                <button class="btn" onclick="window.location.href='/add_mortgage'" style="margin-left: 1rem;">PŘIDAT HYPOTÉKU</button>
+                <a href="http://192.168.37.23:5000" class="btn">
+                    <i class="fas fa-qrcode"></i> Menu
+                </a>
+            </div>
+        </div>
+        
+        <div class="members-list">
+            <h3 class="list-title">ČLENOVÉ RODINY // ŘÍZENÍ PŘÍSTUPU</h3>
+            <table id="membersTable">
+                <thead>
+                    <tr>
+                        <th>ČLEN</th>
+                        <th>ROLE</th>
+                        <th>VĚK</th>
+                        <th>ZAMĚSTNÁNÍ</th>
+                        <th>PŘÍJEM</th>
+                        <th>PŘÍSPĚVEK</th>
+                        <th>POSLEDNÍ AKTIVITA</th>
+                        <th>STAV</th>
+                        <th>AKCE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                    <tr>
+                        <td>{{ member.name.upper() }} // ID: {{ member.id }}</td>
+                        <td><span class="member-role">{{ member.role.upper() }}</span></td>
+                        <td>{{ member.age }}</td>
+                        <td>{{ member.employment.upper() }}</td>
+                        <td class="amount">{{ "{:,.2f}".format(member.income).replace(",", " ").replace(".", ",") }} Kč</td>
+                        <td class="amount">{{ "{:,.2f}".format(member.contribution).replace(",", " ").replace(".", ",") }} Kč</td>
+                        <td>{{ member.last_activity }}</td>
+                        <td style="color: var(--matrix-green);">{{ member.status }}</td>
+                        <td>
+                            <form action="/delete_member/{{ member.id }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn-small btn-danger">ODSTRANIT</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mortgage-section">
+            <div class="mortgage-info">
+                {% if mortgage %}
+                <div class="mortgage-details">
+                    <div class="mortgage-item">
+                        <span>JISTINA:</span>
+                        <span>{{ "{:,.2f}".format(mortgage.total_amount).replace(",", " ").replace(".", ",") }} Kč</span>
+                    </div>
+                    <div class="mortgage-item">
+                        <span>ÚROKOVÁ SAZBA:</span>
+                        <span>{{ mortgage.interest_rate }}%</span>
+                    </div>
+                    <div class="mortgage-item">
+                        <span>DOBA SPLÁCENÍ:</span>
+                        <span>{{ mortgage.term }} LET</span>
+                    </div>
+                    <div class="mortgage-item highlight">
+                        <span>MĚSÍČNÍ SPLÁTKA:</span>
+                        <span>{{ "{:,.2f}".format(mortgage.monthly_payment).replace(",", " ").replace(".", ",") }} Kč</span>
+                    </div>
+                    <div class="mortgage-item">
+                        <span>HLÁVNÍ DLUŽNÍK:</span>
+                        <span>{{ mortgage.primary_name.upper() }}</span>
+                    </div>
+                    {% if mortgage.co_name %}
+                    <div class="mortgage-item">
+                        <span>SPOLUDLUŽNÍK:</span>
+                        <span>{{ mortgage.co_name.upper() }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="mortgage-item">
+                        <span>DATUM ZAČÁTKU:</span>
+                        <span>{{ mortgage.start_date }}</span>
+                    </div>
+                    <div class="mortgage-item">
+                        <span>ZBYTEK K SPLACENÍ:</span>
+                        <span>{{ "{:,.2f}".format(mortgage.remaining_balance).replace(",", " ").replace(".", ",") }} Kč</span>
+                    </div>
+                    
+                    <div class="mortgage-schedule">
+                        <h4>PLÁN SPLÁCENÍ // PŘEHLED</h4>
+                        <div class="schedule-header">
+                            <div class="schedule-col">ROK</div>
+                            <div class="schedule-col">ÚROK</div>
+                            <div class="schedule-col">ÚMORA</div>
+                            <div class="schedule-col">ZŮSTATEK</div>
+                        </div>
+                        
+                        {% for year in mortgage.schedule %}
+                        <div class="schedule-row">
+                            <div class="schedule-col">{{ year.year }}</div>
+                            <div class="schedule-col">{{ "{:,.2f}".format(year.interest).replace(",", " ").replace(".", ",") }} Kč</div>
+                            <div class="schedule-col">{{ "{:,.2f}".format(year.principal).replace(",", " ").replace(".", ",") }} Kč</div>
+                            <div class="schedule-col">{{ "{:,.2f}".format(year.balance).replace(",", " ").replace(".", ",") }} Kč</div>
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="schedule-summary">
+                            <div class="summary-item">
+                                <span>CELKOVÁ ČÁSTKA:</span>
+                                <span>{{ "{:,.2f}".format(mortgage.total_amount).replace(",", " ").replace(".", ",") }} Kč</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>CELKEM ÚROKY:</span>
+                                <span>{{ "{:,.2f}".format(mortgage.total_interest).replace(",", " ").replace(".", ",") }} Kč</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>CELKEM SPLÁTKY:</span>
+                                <span>{{ "{:,.2f}".format(mortgage.total_payment).replace(",", " ").replace(".", ",") }} Kč
+                            </div>
+                            <div class="summary-item summary-total">
+                                <span>PŘEPLATEK:</span>
+                                <span>{{ "{:,.2f}".format(mortgage.total_interest/mortgage.total_amount*100).replace(",", " ").replace(".", ",") }}% ({{ "{:,.2f}".format(mortgage.total_interest).replace(",", " ").replace(".", ",") }} Kč)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="expenses-section">
+            <h3 class="list-title">MĚSÍČNÍ VÝDAJE // AUTOMATICKÝ VÝPOČET</h3>
+            <div class="expenses-grid">
+                <!-- pevné, proměnné, volitelné výdaje beze změny -->
+                <div class="expense-category">
+                    <h4>PEVNÉ VÝDAJE</h4>
+                    <div class="expense-item"><span>Hypotéka/Nájem:</span><span>{{ "{:,.2f}".format(expenses.fixed.mortgage).replace(",", " ").replace(".", ",") }} Kč</span></div>
+                    <div class="expense-item"><span>Energie:</span><span>{{ "{:,.2f}".format(expenses.fixed.utilities).replace(",", " ").replace(".", ",") }} Kč</span></div>
+                    <div class="expense-item"><span>Pojištění:</span><span>{{ "{:,.2f}".format(expenses.fixed.insurance).replace(",", " ").replace(".", ",") }} Kč</span></div>
+                    <div class="expense-item total"><span>CELKEM PEVNÉ:</span><span>{{ "{:,.2f}".format(expenses.fixed.total).replace(",", " ").replace(".", ",") }} Kč</span></div>
+                </div>
+                <div class="expense-category">
+                    <h4>PROMĚNNÉ VÝDAJE</h4>
+                    <div class="expense-item"><span>Potraviny:</span><span>{{ "{:,.2f}".format(expenses.variable.food).replace(",", " ").replace(".", ",") }} Kč</span></div>
+                    <div class="expense-item"><span>Doprava:</span><span>{{ "{:,.2f}".format(expenses.variable.transport).replace(",", " ").replace(".", ",") }} Kč</span></div>
+                    <div class="expense-item"><span>Vzdělání:</span><span>{{ "{:,.2f}".format(expenses.variable.education).replace(",", " ").replace(".", ",") }} Kč</span></div>
+                    <div class="expense-item total"><span>CELKEM PROMĚNNÉ:</span><span>{{ "{:,.2f}".format(expenses.variable.total).replace(",", " ").replace(".", ",") }} Kč</span></div>
+                </div>
+                <div class="expense-category">
+                    <h4>VOLITELNÉ VÝDAJE</h4>
+                    <div class="expense-item"><span>Zábava:</span><span>{{ "{:,.2f}".format(expenses.discretionary.entertainment).replace(",", " ").replace(".", ",") }} Kč</span></div>
+                    <div class="expense-item"><span>Spoření:</span><span>{{ "{:,.2f}".format(expenses.discretionary.savings).replace(",", " ").replace(".", ",") }} Kč</span></div>
+                    <div class="expense-item"><span>Ostatní:</span><span>{{ "{:,.2f}".format(expenses.discretionary.other).replace(",", " ").replace(".", ",") }} Kč</span></div>
+                    <div class="expense-item total"><span>CELKEM VOLITELNÉ:</span><span>{{ "{:,.2f}".format(expenses.discretionary.total).replace(",", " ").replace(".", ",") }} Kč</span></div>
+                </div>
+                
+                <div class="expense-summary">
+                    <h4>FINANČNÍ ZDRAVÍ RODINY</h4>
+                    <div class="fh-actions">
+                        <button id="btnAddInc" class="btn-small"><i class="fa fa-plus-circle"></i>PŘIDAT PŘÍJEM</button>
+                        <button id="btnAddExp" class="btn-small"><i class="fa fa-minus-circle"></i>PŘIDAT VÝDAJ</button>
+                    </div>
+                    <div id="customList"></div>
+                    <div class="expense-item large"><span>CELKOVÝ MĚSÍČNÍ PŘÍJEM:</span><span id="fhIncome">{{ "{:,.2f}".format(summary.total_income).replace(",", " ").replace(".", ",") }} Kč</span></div>
+                    {% set child_count = members|selectattr('role', 'equalto', 'Child')|list|length %}
+                    {% set student_count = members|selectattr('employment', 'equalto', 'Student')|list|length %}
+                    {% set child_expenses = child_count*5000+student_count*7000 %}
+                    {% if child_count>0 or student_count>0 %}
+                    <div class="expense-item large highlight"><span>VÝDAJE NA DĚTI A STUDENTY:</span><span id="fhChild">{{ "{:,.2f}".format(child_expenses).replace(",", " ").replace(".", ",") }} Kč</span><small class="calculation-note">({{child_count}}×5 000 Kč + {{student_count}}×7 000 Kč)</small></div>
+                    {% endif %}
+                    <div class="expense-item large"><span>CELKOVÉ MĚSÍČNÍ VÝDAJE:</span><span id="fhExpense">{{ "{:,.2f}".format(summary.total_expenses+child_expenses).replace(",", " ").replace(".", ",") }} Kč</span></div>
+                    <div class="expense-item large"><span>MÍRA SPOŘENÍ:</span><span id="fhRate">{% set net=summary.total_expenses+child_expenses %}{% set rate=summary.total_income>0 and ((summary.total_income-net)/summary.total_income*100) or 0 %}{{"%.1f"|format(rate if rate>0 else 0)}}%</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast"></div>
+    
+    <script>
+        function showHackerMessage(){alert("REŽIM LADĚNÍ AKTIVOVÁN\nINTEGRITA SYSTÉMU OVĚŘENA");}
+        document.addEventListener('DOMContentLoaded',()=>{
+            const baseI=parseFloat('{{summary.total_income}}'),
+                  baseE=parseFloat('{{summary.total_expenses+child_expenses}}');
+            let incs=[],exps=[];
+            const elInc=document.getElementById('fhIncome'),
+                  elExp=document.getElementById('fhExpense'),
+                  elRat=document.getElementById('fhRate'),
+                  elCus=document.getElementById('customList'),
+                  toast=document.getElementById('toast');
+            const fmt=v=>v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' Kč';
+            function showToast(msg){
+                toast.textContent=msg;toast.classList.add('show');
+                setTimeout(()=>toast.classList.remove('show'),2000);
+            }
+            function recalc(){
+                const si=baseI+incs.reduce((a,b)=>a+b.value,0),
+                      se=baseE+exps.reduce((a,b)=>a+b.value,0);
+                elInc.textContent=fmt(si);elExp.textContent=fmt(se);
+                const rate=si>0?((si-se)/si*100):0;elRat.textContent=rate.toFixed(1)+' %';
+                let html='';
+                incs.forEach(i=>html+=`<div class="summary-item"><span>Příjem-${i.desc}:</span><span>${fmt(i.value)}</span></div>`);
+                exps.forEach(e=>html+=`<div class="summary-item"><span>Výdaj-${e.desc}:</span><span>${fmt(e.value)}</span></div>`);
+                elCus.innerHTML=html;
+            }
+            document.getElementById('btnAddInc').addEventListener('click',()=>{
+                const d=prompt('Popis příjmu:');if(!d)return;
+                const v=parseFloat(prompt('Hodnota (Kč):','0'));if(isNaN(v)||v<=0)return;
+                incs.push({desc:d,value:v});recalc();showToast('Příjem přidán');
+            });
+            document.getElementById('btnAddExp').addEventListener('click',()=>{
+                const d=prompt('Popis výdaje:');if(!d)return;
+                const v=parseFloat(prompt('Hodnota (Kč):','0'));if(isNaN(v)||v<=0)return;
+                exps.push({desc:d,value:v});recalc();showToast('Výdaj přidán');
+            });
+            recalc();
+        });
+        document.addEventListener('DOMContentLoaded',()=>{
+            document.querySelectorAll('.amount').forEach(a=>{
+                const t=a.textContent.split(' '),n=t[0].replace('.',','),c=t[1]||'';
+                const p=n.split(','),ip=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,' ')+(p[1]?','+p[1]:'');
+                a.textContent=ip+' '+c;
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uživatelé | CyberAdmin</title>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-user-shield"></i> Uživatelé systému</h1>
+            <div class="header-actions">
+                <a href="http://192.168.37.23:5002" class="btn btn-family">
+                    <i class="fas fa-users"></i> Rodinná peněženka
+                </a>
+                <a href="http://192.168.37.23:5001" class="btn btn-primary">
+                    <i class="fas fa-qrcode"></i> Skenovat
+                </a>
+                <a href="{{ url_for('register') }}" class="btn btn-secondary">
+                    <i class="fas fa-user-plus"></i> Nový
+                </a>
+            </div>
+        </header>
+
+        
+
+        <div class="user-list">
+            {% for user in users %}
+            <div class="user-card {% if user.family_id %}family-highlight{% endif %}">
+                <div class="user-name">
+                    {{ user.first_name }} {{ user.last_name }}
+                    <span class="status-dot"></span>
+                    {% if user.family_id %}
+                    <span class="family-badge"><i class="fas fa-users family-icon"></i> Rodina</span>
+                    {% endif %}
+                </div>
+                <div class="user-info">
+                    <div><i class="fas fa-building"></i> Pracoviště: {{ user.workplace or 'Neuvedeno' }}</div>
+                    <div><i class="fas fa-credit-card"></i> Plat: {{ "%.2f"|format(user.salary) }} Kč</div>
+                    {% if user.family_contribution %}
+                    <div><i class="fas fa-hand-holding-heart" style="color: #ff8800;"></i> Příspěvek rodině: {{ user.family_contribution }} Kč</div>
+                    {% endif %}
+                    <span class="salary-badge">
+                        <i class="fas fa-chart-line"></i> Měsíční příjem
+                    </span>
+                </div>
+                <div class="user-actions">
+                    <a href="{{ url_for('user_detail', user_id=user.id) }}" class="action-btn btn-primary">
+                        <i class="fas fa-eye"></i> Detaily
+                    </a>
+                    <a href="{{ url_for('export_data', user_id=user.id) }}" class="action-btn btn-secondary">
+                        <i class="fas fa-file-export"></i> Export
+                    </a>
+                    <a href="{{ url_for('delete_user', user_id=user.id) }}" class="action-btn delete-btn" onclick="return confirm('Opravdu smazat?');">
+                        <i class="fas fa-trash-alt"></i>
+                    </a>
+                    {% if user.family_id %}
+                    <a href="{{ url_for('family_wallet', family_id=user.family_id) }}" class="action-btn btn-family">
+                        <i class="fas fa-wallet"></i> Peněženka
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="nav-links">
+            <a href="{{ url_for('portfolio') }}" class="btn btn-secondary">
+                <i class="fas fa-info-circle"></i> O aplikaci
+            </a>
+            <a href="{{ url_for('ai_advisor') }}" class="btn btn-primary">
+                <i class="fas fa-robot"></i> AI Poradce
+            </a>
+        </div>
+    </div>
+</body>
+</html>

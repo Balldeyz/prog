@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINÁL-ÚČTENKA v2.3.7</title>
+    <style>
+        :root {
+            --terminal-bg: #0a0a0a;
+            --terminal-text: #00ff00;
+            --terminal-border: #00aa00;
+            --terminal-highlight: #00ff88;
+            --terminal-error: #ff0033;
+            --terminal-warning: #ffaa00;
+        }
+        body {
+            background-color: var(--terminal-bg);
+            color: var(--terminal-text);
+            font-family: 'Courier New', monospace;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 1rem;
+            position: relative;
+        }
+        .boot-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', monospace;
+        }
+        .boot-loader {
+            width: 300px;
+            height: 3px;
+            background-color: #333;
+            margin-top: 2rem;
+            overflow: hidden;
+        }
+        .boot-progress {
+            height: 100%;
+            width: 0%;
+            background-color: var(--terminal-highlight);
+            transition: width 3s ease-in-out;
+        }
+        .boot-message {
+            margin-top: 1rem;
+            color: var(--terminal-highlight);
+            text-align: center;
+        }
+        .terminal-header {
+            border-bottom: 1px solid var(--terminal-border);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        .terminal-title {
+            font-weight: bold;
+            color: var(--terminal-highlight);
+        }
+        .terminal-command {
+            background-color: #111;
+            border: 1px solid var(--terminal-border);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .command-line {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .prompt {
+            color: var(--terminal-highlight);
+            margin-right: 0.5rem;
+        }
+        .command-input {
+            background-color: transparent;
+            border: none;
+            color: var(--terminal-text);
+            font-family: 'Courier New', monospace;
+            width: calc(100% - 50px);
+            outline: none;
+        }
+        .btn-terminal {
+            background-color: #111;
+            color: var(--terminal-text);
+            border: 1px solid var(--terminal-border);
+            padding: 0.5rem 1rem;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .btn-terminal:hover {
+            background-color: #222;
+            color: var(--terminal-highlight);
+        }
+        .file-info {
+            color: var(--terminal-highlight);
+            margin: 0.5rem 0;
+        }
+        .status {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border-left: 3px solid var(--terminal-border);
+        }
+        .success {
+            color: var(--terminal-highlight);
+            border-left-color: var(--terminal-highlight);
+        }
+        .error {
+            color: var(--terminal-error);
+            border-left-color: var(--terminal-error);
+        }
+        .warning {
+            color: var(--terminal-warning);
+            border-left-color: var(--terminal-warning);
+        }
+        #results-section, #history-section {
+            background-color: #111;
+            border: 1px solid var(--terminal-border);
+            padding: 1rem;
+            margin-top: 1rem;
+            display: none;
+        }
+        .receipt-data {
+            margin-top: 1rem;
+        }
+        .receipt-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px dashed var(--terminal-border);
+        }
+        .meta-item {
+            background-color: #0a0a0a;
+            padding: 0.5rem;
+            border-left: 2px solid var(--terminal-border);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th {
+            background-color: #0a0a0a;
+            color: var(--terminal-highlight);
+            padding: 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--terminal-border);
+        }
+        td {
+            padding: 0.5rem;
+            border-bottom: 1px solid #333;
+        }
+        tr:hover td {
+            background-color: #0a0a0a;
+            color: var(--terminal-highlight);
+        }
+        .vat-rates {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .vat-rate {
+            background-color: #0a0a0a;
+            padding: 0.5rem;
+            border: 1px solid var(--terminal-border);
+        }
+        .history-item {
+            background-color: #0a0a0a;
+            border: 1px solid var(--terminal-border);
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+        .history-item:hover {
+            background-color: #111;
+            border-color: var(--terminal-highlight);
+        }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.3rem;
+        }
+        .history-header strong {
+            color: var(--terminal-highlight);
+        }
+        footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--terminal-border);
+            font-size: 0.8rem;
+            color: #666;
+            text-align: center;
+        }
+        .blink {
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            from, to { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .typing {
+            border-right: 2px solid var(--terminal-highlight);
+            animation: blink 1s step-end infinite;
+        }
+        #file-input {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .receipt-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="boot-screen">
+        <div>INICIALIZACE SYSTÉMU PRO SKENOVÁNÍ ÚČTENEK...</div>
+        <div class="boot-loader">
+            <div class="boot-progress" id="boot-progress"></div>
+        </div>
+        <div class="boot-message" id="boot-message">Načítání jádra systému...</div>
+    </div>
+
+    <div class="container" id="main-content" style="display: none;">
+        <div class="terminal-header">
+            <div class="terminal-title">FotoBrána</div>
+            <div>UŽIVATEL</div>
+        </div>
+        
+        <div class="terminal-command">
+            <div class="command-line">
+                <span class="prompt">C:\SCANNER&gt;</span>
+                <span id="initial-command" class="typing">spustit scanner.exe</span>
+            </div>
+            <div id="command-output"></div>
+        </div>
+        
+        <div id="scanner-interface">
+            <h2>MODUL PRO SKENOVÁNÍ ÚČTENEK</h2>
+            
+            <div class="command-line">
+                <span class="prompt">C:\SCANNER\NAHRÁNÍ&gt;</span>
+                <button class="btn-terminal" onclick="document.getElementById('file-input').click()">VYBRAT_SOUBOR</button>
+                
+                <input type="file" id="file-input" accept="image/*">
+                <span class="file-info" id="file-info">ŽÁDNÝ_SOUBOR_NENÍ_VYBRÁN</span>
+            </div>
+            
+            <div class="command-line">
+                <span class="prompt">C:\SCANNER\PROCESS&gt;</span>
+                <button class="btn-terminal" id="upload-btn" disabled>NAHRÁT_A_ZPRACOVAT</button>
+                <button class="btn-terminal" id="show-history">ZOBRAZIT_HISTORII</button>
+                 <button class="btn-terminal" onclick="window.location.href='http://192.168.37.23:5000';">Menu</button>
+            </div>
+            
+            <div id="status-message" class="status"></div>
+            
+            <div id="results-section">
+                <div class="command-line">
+                    <span class="prompt">C:\SCANNER\VÝSLEDKY&gt;</span>
+                    <span>VÝSTUP_DAT_Z_ÚČTENKY</span>
+                </div>
+                <div id="receipt-data" class="receipt-data"></div>
+            </div>
+            
+            <div id="history-section" class="history-section">
+                <div class="command-line">
+                    <span class="prompt">C:\SCANNER\HISTORIE&gt;</span>
+                    <span>HISTORIE_TRANSAKCÍ</span>
+                </div>
+                <div id="history-list"></div>
+            </div>
+            
+            <div class="command-line">
+                <span class="prompt">C:\SCANNER\NÁPOVĚDA&gt;</span>
+                <span>INSTRUKCE:</span>
+            </div>
+            <div>
+                <ol style="padding-left: 1.5rem;">
+                    <li>KLIKNĚTE NA "VYBRAT_SOUBOR" PRO VÝBĚR OBRÁZKU ÚČTENKY</li>
+                    <li>KLIKNĚTE NA "NAHRÁT_A_ZPRACOVAT" PRO ANALÝZU</li>
+                    <li>POČKEJTE NA UKONČENÍ ZPRACOVÁNÍ</li>
+                    <li>KLIKNĚTE NA "ZOBRAZIT_HISTORII" PRO ZOBRAZENÍ PŘEDCHOZÍCH ÚČTENEK</li>
+                </ol>
+                <div>PODPOROVANÉ_FORMÁTY: JPG, PNG, BMP</div>
+            </div>
+        </div>
+        
+        <footer>
+            &copy; 2025 SYSTÉM PRO SKENOVÁNÍ ÚČTENEK | FLASK OCR TERMINÁL v2.3.7
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const bootProgress = document.getElementById('boot-progress');
+            const bootMessage = document.getElementById('boot-message');
+            const mainContent = document.getElementById('main-content');
+            const messages = [
+                "Načítání jádra systému...",
+                "Inicializace OCR enginu...",
+                "Připojování souborových systémů...",
+                "Spouštění skeneru účtenek...",
+                "Navazování spojení s databází...",
+                "Systém připraven..."
+            ];
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                bootProgress.style.width = `${progress}%`;
+                bootMessage.textContent = messages[Math.min(Math.floor(progress / 20), messages.length - 1)];
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.querySelector('.boot-screen').style.display = 'none';
+                        mainContent.style.display = 'block';
+                        const initialCommand = document.getElementById('initial-command');
+                        initialCommand.classList.remove('typing');
+                        setTimeout(() => {
+                            document.getElementById('command-output').textContent = "Modul skeneru inicializován. Připraven ke zpracování účtenek.";
+                        }, 500);
+                    }, 500);
+                }
+            }, 300);
+        });
+
+        const fileInput = document.getElementById('file-input');
+        const fileInfo = document.querySelector('.file-info');
+        const uploadBtn = document.getElementById('upload-btn');
+        const statusMessage = document.getElementById('status-message');
+        const resultsSection = document.getElementById('results-section');
+        const receiptDataDiv = document.getElementById('receipt-data');
+        const showHistoryBtn = document.getElementById('show-history');
+        const historySection = document.getElementById('history-section');
+        const historyList = document.getElementById('history-list');
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                fileInfo.textContent = `VYBRANÝ_SOUBOR: ${e.target.files[0].name}`;
+                uploadBtn.disabled = false;
+            } else {
+                fileInfo.textContent = 'ŽÁDNÝ_SOUBOR_NENÍ_VYBRÁN';
+                uploadBtn.disabled = true;
+            }
+        });
+
+        uploadBtn.addEventListener('click', async () => {
+            if (!fileInput.files.length) return;
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            try {
+                uploadBtn.disabled = true;
+                uploadBtn.textContent = 'PRACUJI...';
+                statusMessage.className = 'status';
+                statusMessage.textContent = '';
+                const response = await fetch('/upload', { method: 'POST', body: formData });
+                const result = await response.json();
+                if (result.error) throw new Error(result.error);
+                statusMessage.textContent = result.success;
+                statusMessage.className = 'status success';
+                displayReceiptData(result.data);
+                historySection.style.display = 'none';
+                resultsSection.style.display = 'block';
+                await loadHistory();
+            } catch (error) {
+                statusMessage.textContent = 'CHYBA: ' + error.message;
+                statusMessage.className = 'status error';
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'NAHRÁT_A_ZPRACOVAT';
+            }
+        });
+
+        showHistoryBtn.addEventListener('click', async () => {
+            if (historySection.style.display === 'block') {
+                historySection.style.display = 'none';
+                showHistoryBtn.textContent = 'ZOBRAZIT_HISTORII';
+            } else {
+                await loadHistory();
+                historySection.style.display = 'block';
+                resultsSection.style.display = 'none';
+                showHistoryBtn.textContent = 'SKRÝT_HISTORII';
+            }
+        });
+
+        async function loadHistory() {
+            try {
+                const response = await fetch('/receipts');
+                const receipts = await response.json();
+                if (receipts.error) throw new Error(receipts.error);
+                historyList.innerHTML = '';
+                if (receipts.length === 0) {
+                    historyList.innerHTML = '<p>NEBYLY_NALEZENY_ŽÁDNÉ_PŘEDCHOZÍ_ÚČTENKY</p>';
+                    return;
+                }
+                receipts.forEach(receipt => {
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    item.innerHTML = `
+                        <div class="history-header">
+                            <strong>${receipt.date || 'NEZNÁMÉ_DATUM'}</strong>
+                            <span>${parseFloat(receipt.total).toFixed(2)} Kč</span>
+                        </div>
+                        <div>POKLADNA: ${receipt.cash_register || 'NEZNÁMÁ'}</div>
+                        <div style="font-size: 0.8em; color: #6c757d; margin-top: 0.5rem;">
+                            ${new Date(receipt.timestamp).toLocaleString()}
+                        </div>
+                    `;
+                    item.addEventListener('click', () => {
+                        displayReceiptData(JSON.parse(receipt.items));
+                        historySection.style.display = 'none';
+                        resultsSection.style.display = 'block';
+                        showHistoryBtn.textContent = 'ZOBRAZIT_HISTORII';
+                    });
+                    historyList.appendChild(item);
+                });
+            } catch (error) {
+                statusMessage.textContent = 'CHYBA_NAČÍTÁNÍ: ' + error.message;
+                statusMessage.className = 'status error';
+            }
+        }
+
+        function displayReceiptData(data) {
+            // Seřadíme položky abecedně podle názvu
+            const sortedItems = Array.isArray(data.items)
+                ? [...data.items].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+                : [];
+
+            // Seřadíme DPH podle sazby vzestupně, pokud je k dispozici
+            const sortedVat = Array.isArray(data.vat)
+                ? [...data.vat].sort((a, b) => a.rate - b.rate)
+                : [];
+
+            let html = `
+                <div class="receipt-meta">
+                    <div class="meta-item">
+                        <strong>DATUM</strong>
+                        ${data.date || 'NENÍ_K_DISPOZICI'}
+                    </div>
+                    ${data.time ? `
+                    <div class="meta-item">
+                        <strong>ČAS</strong>
+                        ${data.time}
+                    </div>` : ''}
+                    ${data.cash_register ? `
+                    <div class="meta-item">
+                        <strong>POKLADNA</strong>
+                        ${data.cash_register}
+                    </div>` : ''}
+                    ${data.receipt_number ? `
+                    <div class="meta-item">
+                        <strong>ČÍSLO_ÚČTENKY</strong>
+                        ${data.receipt_number}
+                    </div>` : ''}
+                    ${data.total ? `
+                    <div class="meta-item">
+                        <strong>CELKEM</strong>
+                        ${parseFloat(data.total).toFixed(2)} Kč
+                    </div>` : ''}
+                    ${data.payment_method ? `
+                    <div class="meta-item">
+                        <strong>PLATEBNÍ_METODA</strong>
+                        ${data.payment_method}
+                    </div>` : ''}
+                    ${data.change ? `
+                    <div class="meta-item">
+                        <strong>VRÁCENO</strong>
+                        ${parseFloat(data.change).toFixed(2)} Kč
+                    </div>` : ''}
+                </div>
+                <h3>POLOŽKY</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>NÁZEV_POLOŽKY</th>
+                            <th>CENA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            sortedItems.forEach(item => {
+                html += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.price.toFixed(2)} Kč</td>
+                    </tr>
+                `;
+            });
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            if (sortedVat.length > 0) {
+                html += `
+                    <h3>DPH</h3>
+                    <div class="vat-rates">
+                `;
+                sortedVat.forEach(vat => {
+                    html += `
+                        <div class="vat-rate">
+                            ${vat.rate}%: ${vat.amount.toFixed(2)} Kč
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            receiptDataDiv.innerHTML = html;
+            resultsSection.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

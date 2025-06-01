@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Hypoteční graf - profesionální UI</title>
+    <style>
+        :root {
+            --matrix-green: #00ff41;
+            --dark-bg: #0a0a0a;
+            --light-text: #e0e0e0;
+            --input-bg: rgba(20, 20, 20, 0.9);
+            --panel-bg: rgba(10, 18, 10, 0.94);
+            --border: #1c5;
+            --legend-bg: rgba(20, 30, 20, 0.96);
+            --legend-txt: #eee;
+            --income-bg: #124f28;
+            --expense-bg: #49191a;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: var(--dark-bg);
+            color: var(--light-text);
+            font-family: 'Rajdhani', sans-serif;
+        }
+        .container {
+            max-width: 940px;
+            margin: 30px auto;
+            background: var(--panel-bg);
+            border-radius: 13px;
+            box-shadow: 0 0 35px #00ff4150;
+            padding: 38px 22px 24px 22px;
+            border: 1.5px solid var(--matrix-green);
+        }
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 16px;
+        }
+        .back-btn {
+            background: var(--matrix-green);
+            color: #051;
+            border: none;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.08rem;
+            border-radius: 7px;
+            padding: 11px 25px;
+            cursor: pointer;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            transition: background 0.17s;
+            box-shadow: 0 2px 12px #00ff4140;
+        }
+        .back-btn:hover {
+            background: #27ff62;
+            color: #050;
+        }
+        .form-title {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--matrix-green);
+            text-align: center;
+            font-size: 2.0rem;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+            margin-top: 0;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px 26px;
+            margin-bottom: 25px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #c8f2d2;
+            font-size: 1.1rem;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            background: var(--input-bg);
+            color: #fff;
+            border: 1.2px solid var(--matrix-green);
+            border-radius: 5px;
+            padding: 9px 11px;
+            font-size: 1.13rem;
+            font-family: 'Rajdhani', sans-serif;
+            margin-bottom: 0;
+            box-sizing: border-box;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #52ff7a;
+        }
+        .action-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin: 10px 0 20px 0;
+        }
+        .action-bar label {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--matrix-green);
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        .action-bar select {
+            background: #181818;
+            border: 1px solid var(--matrix-green);
+            color: var(--matrix-green);
+            font-family: 'Orbitron', sans-serif;
+            padding: 7px 15px;
+            border-radius: 5px;
+            font-size: 1.05rem;
+        }
+        .calculate-btn {
+            width: 100%;
+            margin-top: 13px;
+            padding: 13px 0;
+            background: linear-gradient(90deg, #00ff41b0 70%, #52ff7a 100%);
+            color: #071a08;
+            border: none;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            font-size: 1.15rem;
+            border-radius: 7px;
+            cursor: pointer;
+            letter-spacing: 1.2px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 12px #00ff4138;
+            transition: background 0.18s;
+        }
+        .calculate-btn:hover {
+            background: linear-gradient(90deg, #52ff7a 60%, #00ff41 100%);
+        }
+        .panel {
+            background: rgba(16,32,16,0.89);
+            border-radius: 10px;
+            padding: 20px 16px 10px 16px;
+            margin-bottom: 25px;
+            box-shadow: 0 0 8px #00ff4132;
+            border: 1px solid #1e1;
+        }
+        .panel .panel-title {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--matrix-green);
+            font-size: 1.23rem;
+            margin-bottom: 18px;
+            margin-top: 0;
+            text-align: center;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 13px 20px;
+            margin-top: 7px;
+        }
+        .summary-item {
+            padding: 12px 11px;
+            background: #163;
+            border-radius: 5px;
+            font-size: 1.07rem;
+            color: #fff;
+            border-left: 5px solid #00ff41;
+            display: flex;
+            flex-direction: column;
+        }
+        .summary-item-label {
+            font-size: 0.92rem;
+            color: #c8f2d2;
+            margin-bottom: 3px;
+        }
+        .summary-item-value {
+            font-size: 1.13rem;
+            font-weight: bold;
+            font-family: 'Orbitron', sans-serif;
+        }
+        .graph-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 38px;
+            margin-top: 8px;
+        }
+        .legend-block {
+            background: var(--legend-bg);
+            color: var(--legend-txt);
+            border-radius: 7px;
+            padding: 17px 21px;
+            min-width: 155px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: fit-content;
+            box-shadow: 0 0 6px #00ff4144;
+            font-size: 1.07rem;
+        }
+        .legend-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+        }
+        .legend-dot {
+            display: inline-block;
+            width: 19px;
+            height: 19px;
+            border-radius: 4px;
+            margin-right: 4px;
+        }
+        .legend-dot.principal { background: #00ff41; }
+        .legend-dot.interest { background: #00c864; }
+        .legend-dot.total { background: #31e6e9; }
+        .legend-dot.pie0 { background: #00ff41; }
+        .legend-dot.pie1 { background: #00c864; }
+        .legend-dot.pie2 { background: #1e96e9; }
+        .legend-dot.pie3 { background: #ff00ff; }
+        .legend-dot.pie4 { background: #ffa600; }
+        .legend-dot.pie5 { background: #00fff2; }
+        .legend-dot.pie6 { background: #e9f700; }
+        .legend-dot.pie7 { background: #ff7600; }
+        .legend-dot.pie8 { background: #0022ff; }
+        .legend-dot.pie9 { background: #bd00ff; }
+        .legend-dot.pie10 { background: #ff0000; }
+        .legend-dot.pie11 { background: #00c864; }
+        .custom-legend-label {margin-right: 9px;}
+        .chart-area, .classic-graph-area {
+            flex: 1 1 340px;
+            min-width: 340px;
+            min-height: 390px;
+            background: #111;
+            border-radius: 11px;
+            box-shadow: 0 0 9px #00ff4122;
+            padding: 19px 10px 10px 10px;
+            position: relative;
+        }
+        #mortgageChart {
+            display: block;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        .classic-graph-area {
+            height: 390px;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            position: relative;
+            overflow-x: auto;
+            padding-bottom: 27px;
+            padding-top: 24px;
+        }
+        .classic-bar-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 29px;
+            position: relative;
+        }
+        .classic-bar {
+            width: 22px;
+            margin: 0 1px;
+            position: relative;
+        }
+        .classic-bar.principal {
+            background: #00ff41;
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
+        }
+        .classic-bar.interest {
+            background: #00c864;
+            border-bottom-left-radius: 3px;
+            border-bottom-right-radius: 3px;
+            margin-top: -1px;
+        }
+        .classic-label {
+            margin-top: 7px;
+            color: #bbb;
+            font-size: 0.99rem;
+            text-align: center;
+        }
+        .classic-marker-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            border-top: 1px dashed #00ff4170;
+        }
+        .classic-marker-value {
+            position: absolute;
+            left: -50px;
+            font-size: 0.86rem;
+            color: var(--matrix-green);
+            background: #091b10;
+            padding: 2px 9px;
+            border-radius: 3px;
+            font-family: 'Orbitron', sans-serif;
+        }
+        .classic-tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.96);
+            color: #fff;
+            padding: 12px 17px;
+            border-radius: 5px;
+            font-size: 1.07rem;
+            z-index: 1000;
+            min-width: 190px;
+            box-shadow: 0 0 15px #00ff4165;
+            border: 1px solid #00ff4165;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.14s;
+        }
+        .classic-tooltip strong { color: #00ff41; font-size: 1.16rem; }
+        /* INCOMES / EXPENSES */
+        .ie-panel {
+            background: rgba(0,0,0,0.85);
+            border-radius: 10px;
+            padding: 19px 17px 13px 17px;
+            margin-bottom: 27px;
+            box-shadow: 0 0 12px #00ff4132;
+            border: 1.3px solid #00ff41;
+        }
+        .ie-title {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--matrix-green);
+            font-size: 1.18rem;
+            margin-bottom: 10px;
+            margin-top: 0;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        .ie-table-wrap {
+            overflow-x: auto;
+        }
+        .ie-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 7px;
+        }
+        .ie-table th, .ie-table td {
+            padding: 10px 14px;
+            font-size: 1.08rem;
+            text-align: left;
+            border-bottom: 1px solid #222;
+        }
+        .ie-table th {
+            background: #1a4028;
+            color: #90ffb3;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .ie-table td.type-inc { color: #43ff8a; font-weight: 700; }
+        .ie-table td.type-exp { color: #ff616d; font-weight: 700; }
+        .ie-table tr:last-child td { border-bottom: none; }
+        .ie-sum-row td {
+            background: #184d2c;
+            color: #d4ffe4;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            font-size: 1.11rem;
+        }
+        .ie-add-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px 16px;
+            margin-bottom: 10px;
+            align-items: end;
+        }
+        .ie-add-form input, .ie-add-form select {
+            font-size: 1.07rem;
+            padding: 7px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--matrix-green);
+            background: #171a18;
+            color: var(--matrix-green);
+        }
+        .ie-add-btn {
+            background: var(--matrix-green);
+            color: #021801;
+            border: none;
+            padding: 8px 17px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.07rem;
+            letter-spacing: 1px;
+            transition: background 0.13s;
+        }
+        .ie-add-btn:hover { background: #43ff8a; color: #023501; }
+        .ie-del-btn {
+            background: none;
+            border: none;
+            color: #ff616d;
+            font-size: 1.27rem;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        @media (max-width: 670px) {
+            .form-grid, .summary-grid { grid-template-columns: 1fr; }
+            .graph-wrap { flex-direction: column; gap: 18px; }
+            .container { padding: 10px 2vw 13px 2vw; }
+            .ie-add-form { flex-direction: column; gap: 7px 0; }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Rajdhani:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="top-bar">
+       <button class="back-btn" onclick="window.location.href='/'">zpět</button>
+    </div>
+    <h1 class="form-title">Hypoteční kalkulačka &nbsp; | &nbsp; Moderní přehled splátek</h1>
+    <form class="panel" onsubmit="event.preventDefault();calculateMortgage();">
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="loanAmount">Výše úvěru (Kč)</label>
+                <input type="number" id="loanAmount" value="1000000" min="100000" step="10000">
+            </div>
+            <div class="form-group">
+                <label for="interestRate">Úroková sazba (% p.a.)</label>
+                <input type="number" id="interestRate" value="5.5" min="0.1" max="50" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="loanTerm">Doba splácení (let)</label>
+                <input type="number" id="loanTerm" value="15" min="1" max="40" step="1">
+            </div>
+            <div class="form-group">
+                <label for="paymentType">Typ splácení</label>
+                <select id="paymentType">
+                    <option value="annuity">Anuitní</option>
+                    <option value="linear">Lineární</option>
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="calculate-btn">Vypočítat</button>
+    </form>
+    <!-- INCOMES AND EXPENSES PANEL -->
+    <div class="ie-panel">
+        <h2 class="ie-title">Příjmy a Výdaje</h2>
+        <form class="ie-add-form" onsubmit="addIEItem(event)">
+            <select id="ieType">
+                <option value="Příjem">Příjem</option>
+                <option value="Výdaj">Výdaj</option>
+            </select>
+            <input id="ieCategory" type="text" placeholder="Kategorie" required>
+            <input id="ieDesc" type="text" placeholder="Popis" required>
+            <input id="ieValue" type="number" min="1" placeholder="Hodnota (Kč)" required>
+            <button type="submit" class="ie-add-btn">Přidat</button>
+        </form>
+        <div class="ie-table-wrap">
+            <table class="ie-table" id="ieTable">
+                <thead>
+                    <tr>
+                        <th>Typ</th>
+                        <th>Kategorie</th>
+                        <th>Popis</th>
+                        <th>Hodnota (Kč)</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="ieTableBody">
+                    <!-- Data will be inserted by JS -->
+                </tbody>
+                <tfoot>
+                    <tr class="ie-sum-row">
+                        <td colspan="3">Celkový příjem</td>
+                        <td id="sumIncome"></td>
+                        <td></td>
+                    </tr>
+                    <tr class="ie-sum-row">
+                        <td colspan="3">Celkový výdaj</td>
+                        <td id="sumExpense"></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <!-- GRAFY -->
+    <div class="action-bar">
+        <label for="chartType">Typ grafu:</label>
+        <select id="chartType">
+            <option value="classic">Sloupcový (klasický)</option>
+            <option value="bar">Sloupcový (Chart.js)</option>
+            <option value="line">Liniový (Chart.js)</option>
+            <option value="pie">Koláčový (Chart.js)</option>
+            <option value="doughnut">Donut (Chart.js)</option>
+        </select>
+    </div>
+    <div class="graph-wrap">
+        <div class="legend-block" id="customLegend"></div>
+        <div class="chart-area" id="chartAreaWrap" style="display:none;">
+            <canvas id="mortgageChart" width="380" height="390"></canvas>
+        </div>
+        <div class="classic-graph-area" id="classicGraphArea" style="display:none;"></div>
+    </div>
+    <div class="panel">
+        <h2 class="panel-title">Přehled hypotéky</h2>
+        <div class="summary-grid" id="summaryGrid"></div>
+    </div>
+</div>
+<script>
+function formatNumber(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
+// --- INCOMES & EXPENSES DATA ---
+let incomes = [
+    { type: 'Příjem', category: 'Mzda', desc: 'Hlavní zaměstnání', value: 36000 },
+    { type: 'Příjem', category: 'Pronájem', desc: 'Byt 2+kk', value: 11000 },
+    { type: 'Příjem', category: 'Jiné', desc: 'Přivýdělek IT', value: 4000 }
+];
+let expenses = [
+    { type: 'Výdaj', category: 'Bydlení', desc: 'Nájem/energie', value: 14500 },
+    { type: 'Výdaj', category: 'Jídlo', desc: 'Supermarket/měsíc', value: 7200 },
+    { type: 'Výdaj', category: 'Doprava', desc: 'MHD + auto', value: 2800 },
+    { type: 'Výdaj', category: 'Volný čas', desc: 'Sport, kino', value: 2100 }
+];
+function renderIETable() {
+    let body = '';
+    let sumInc = 0, sumExp = 0;
+    incomes.forEach((i,idx)=>{
+        body += `<tr><td class="type-inc">${i.type}</td><td>${i.category}</td><td>${i.desc}</td><td>${formatNumber(i.value)}</td><td><button class="ie-del-btn" onclick="removeIEItem('income',${idx})" title="Smazat">×</button></td></tr>`;
+        sumInc += i.value;
+    });
+    expenses.forEach((e,idx)=>{
+        body += `<tr><td class="type-exp">${e.type}</td><td>${e.category}</td><td>${e.desc}</td><td>${formatNumber(e.value)}</td><td><button class="ie-del-btn" onclick="removeIEItem('expense',${idx})" title="Smazat">×</button></td></tr>`;
+        sumExp += e.value;
+    });
+    document.getElementById('ieTableBody').innerHTML = body;
+    document.getElementById('sumIncome').textContent = formatNumber(sumInc) + " Kč";
+    document.getElementById('sumExpense').textContent = formatNumber(sumExp) + " Kč";
+}
+function addIEItem(e) {
+    e.preventDefault();
+    const type = document.getElementById('ieType').value;
+    const category = document.getElementById('ieCategory').value.trim();
+    const desc = document.getElementById('ieDesc').value.trim();
+    const value = parseInt(document.getElementById('ieValue').value, 10);
+    if (!category || !desc || !value || value < 1) return;
+    if(type==='Příjem') incomes.push({type, category, desc, value});
+    else expenses.push({type, category, desc, value});
+    renderIETable();
+    document.getElementById('ieCategory').value = '';
+    document.getElementById('ieDesc').value = '';
+    document.getElementById('ieValue').value = '';
+}
+function removeIEItem(group, idx) {
+    if(group==='income') incomes.splice(idx,1);
+    else expenses.splice(idx,1);
+    renderIETable();
+}
+renderIETable();
+
+function calculateAnnuityPayment(principal, annualRate, years) {
+    const monthlyRate = annualRate / 100 / 12;
+    const n = years * 12;
+    const af = monthlyRate * Math.pow(1 + monthlyRate, n) / (Math.pow(1 + monthlyRate, n) - 1);
+    return principal * af;
+}
+function calculateLinearPayment(principal, annualRate, years) {
+    const monthlyPrincipal = principal / (years * 12);
+    const monthlyPayments = [];
+    let remain = principal;
+    for (let i = 0; i < years * 12; i++) {
+        const interest = remain * (annualRate / 100 / 12);
+        monthlyPayments.push(monthlyPrincipal + interest);
+        remain -= monthlyPrincipal;
+    }
+    return monthlyPayments;
+}
+let lastSchedule=[], lastType="annuity", lastLoan=0, lastTerm=0, lastRate=0, lastTotal=0, lastInterest=0;
+function calculateMortgage() {
+    const loan = parseFloat(document.getElementById('loanAmount').value);
+    const rate = parseFloat(document.getElementById('interestRate').value);
+    const term = parseInt(document.getElementById('loanTerm').value);
+    const type = document.getElementById('paymentType').value;
+    let schedule=[], totalInt=0, totalPay=0;
+    if(type==="annuity"){
+        const monthly = calculateAnnuityPayment(loan, rate, term);
+        totalPay = monthly * term * 12;
+        totalInt = totalPay - loan;
+        let remain = loan;
+        for(let y=1;y<=term;y++){
+            let yInt=0, yPrin=0;
+            for(let m=1;m<=12;m++){
+                const mInt = remain * (rate/100/12);
+                const mPrin = monthly - mInt;
+                yInt += mInt; yPrin += mPrin; remain -= mPrin;
+            }
+            schedule.push({year:y, principal:yPrin, interest:yInt, balance:remain>0?remain:0});
+        }
+    } else {
+        const monthlyPayments = calculateLinearPayment(loan, rate, term);
+        totalPay = monthlyPayments.reduce((s,p)=>s+p,0);
+        totalInt = totalPay-loan;
+        let remain = loan, mPrin = loan/(term*12);
+        for(let y=1;y<=term;y++){
+            let yInt=0,yPrin=0;
+            for(let m=1;m<=12;m++){
+                const idx=(y-1)*12+(m-1);
+                const mInt = remain*(rate/100/12);
+                yInt+=mInt; yPrin+=mPrin; remain-=mPrin;
+            }
+            schedule.push({year:y,principal:yPrin,interest:yInt,balance:remain>0?remain:0});
+        }
+    }
+    lastSchedule=schedule; lastType=type; lastLoan=loan; lastTerm=term; lastRate=rate; lastTotal=totalPay; lastInterest=totalInt;
+    updateSummary(loan, term, rate, totalPay, totalInt, type);
+    renderGraph();
+}
+function updateSummary(loan, term, rate, totalPay, totalInt, type) {
+    const grid = document.getElementById('summaryGrid');
+    grid.innerHTML='';
+    const monthly=type==='annuity'?calculateAnnuityPayment(loan,rate,term):(loan/(term*12))+(loan*(rate/100/12));
+    const items=[
+        {label:"Výše úvěru",value:formatNumber(Math.round(loan))+" Kč"},
+        {label:"Úroková sazba",value:rate.toFixed(2)+" %"},
+        {label:"Doba splácení",value:term+" let"},
+        {label:"Typ splácení",value:type==='annuity'?"Anuitní":"Lineární"},
+        {label:"Měsíční splátka",value:formatNumber(Math.round(monthly))+" Kč"},
+        {label:"Celkem zaplatíte",value:formatNumber(Math.round(totalPay))+" Kč"},
+        {label:"Z toho úroky",value:formatNumber(Math.round(totalInt))+" Kč"},
+        {label:"Poměr úrok/jistina",value:(totalInt/loan*100).toFixed(1)+" %"}
+    ];
+    items.forEach(i=>{
+        const el=document.createElement('div');
+        el.className='summary-item';
+        el.innerHTML=`<div class="summary-item-label">${i.label}</div><div class="summary-item-value">${i.value}</div>`;
+        grid.appendChild(el);
+    });
+}
+function renderGraph() {
+    const chartType = document.getElementById("chartType").value;
+    document.getElementById("chartAreaWrap").style.display = (["bar","line","pie","doughnut"].includes(chartType))?"block":"none";
+    document.getElementById("classicGraphArea").style.display = (chartType==="classic")?"flex":"none";
+    updateLegend(chartType);
+    if(chartType==="classic") renderClassicBar();
+    else renderChartJs(chartType);
+}
+function updateLegend(type){
+    let html='';
+    if(type==="classic"||type==="bar"||type==="line"){
+        html+=`<div class="legend-row"><span class="legend-dot principal"></span>Jistina</div>
+        <div class="legend-row"><span class="legend-dot interest"></span>Úrok</div>`;
+    } else if(type==="pie"||type==="doughnut"){
+        lastSchedule.forEach((s,i)=>{
+            html+=`<div class="legend-row"><span class="legend-dot pie${i%12}"></span>Rok ${s.year}</div>`;
+        });
+    }
+    document.getElementById('customLegend').innerHTML=html;
+}
+let mortgageChartInstance;
+function renderChartJs(type){
+    const canvas=document.getElementById("mortgageChart").getContext("2d");
+    if(mortgageChartInstance) mortgageChartInstance.destroy();
+    const labels=lastSchedule.map(e=>"Rok "+e.year);
+    const dataPrincipal=lastSchedule.map(e=>Math.round(e.principal));
+    const dataInterest=lastSchedule.map(e=>Math.round(e.interest));
+    if(type==="bar"||type==="line"){
+        mortgageChartInstance = new Chart(canvas,{
+            type:type,
+            data:{
+                labels:labels,
+                datasets:[
+                    {label:"Jistina",data:dataPrincipal,backgroundColor:"#00ff41bb",borderColor:"#00ff41",borderWidth:2,fill:type==="line"?false:true},
+                    {label:"Úrok",data:dataInterest,backgroundColor:"#00c864cc",borderColor:"#00c864",borderWidth:2,fill:type==="line"?false:true}
+                ]
+            },
+            options:{
+                responsive:false,
+                plugins:{legend:{display:false}},
+                scales:{
+                    y:{beginAtZero:true,ticks:{color:"#00ff41",font:{family:"Orbitron"}}},
+                    x:{ticks:{color:"#00ff41",font:{family:"Orbitron"}}}
+                }
+            }
+        });
+    } else if(type==="pie"||type==="doughnut"){
+        mortgageChartInstance = new Chart(canvas,{
+            type:type,
+            data:{
+                labels:labels,
+                datasets:[{
+                    label:"Splátka za rok",
+                    data:lastSchedule.map(e=>Math.round(e.principal+e.interest)),
+                    backgroundColor:labels.map((_,i)=>["#00ff41","#00c864","#1e96e9","#ff00ff","#ffa600","#00fff2","#e9f700","#ff7600","#0022ff","#bd00ff","#ff0000","#00c864"][i%12]),
+                    borderColor:"#181818",
+                    borderWidth:2
+                }]
+            },
+            options:{
+                responsive:false,
+                plugins:{legend:{display:false}}
+            }
+        });
+    }
+}
+function renderClassicBar(){
+    const area = document.getElementById('classicGraphArea');
+    area.innerHTML='';
+    const maxPay = Math.max(...lastSchedule.map(e=>e.principal+e.interest));
+    [0.75,0.5,0.25].forEach((v,idx)=>{
+        const line=document.createElement('div');
+        line.className='classic-marker-line';
+        line.style.top=(v*100)+'%';
+        line.style.height='1px';
+        line.style.width='100%';
+        area.appendChild(line);
+        const val=document.createElement('span');
+        val.className='classic-marker-value';
+        val.textContent=formatNumber(Math.round(maxPay*v))+" Kč";
+        val.style.top=`calc(${v*100}% - 10px)`;
+        area.appendChild(val);
+    });
+    lastSchedule.forEach((item,i)=>{
+        const barC=document.createElement('div');
+        barC.className='classic-bar-container';
+        const barP=document.createElement('div');
+        barP.className='classic-bar principal';
+        barP.style.height=`${(item.principal/(item.principal+item.interest))*300}px`;
+        barP.style.marginTop=`${(item.interest/(item.principal+item.interest))*300}px`;
+        const barI=document.createElement('div');
+        barI.className='classic-bar interest';
+        barI.style.height=`${(item.interest/(item.principal+item.interest))*300}px`;
+        barC.appendChild(barI); barC.appendChild(barP);
+        const label=document.createElement('div');
+        label.className='classic-label';
+        label.textContent="Rok "+item.year;
+        barC.appendChild(label);
+        const tooltip=document.createElement('div');
+        tooltip.className='classic-tooltip';
+        tooltip.innerHTML=`<strong>Rok ${item.year}</strong>
+        <div>Splaťeno: <b>${formatNumber(Math.round(item.principal+item.interest))} Kč</b></div>
+        <div>Jistina: <b>${formatNumber(Math.round(item.principal))} Kč</b></div>
+        <div>Úrok: <b>${formatNumber(Math.round(item.interest))} Kč</b></div>
+        <div>Zůstatek: <b>${formatNumber(Math.round(item.balance))} Kč</b></div>`;
+        barC.appendChild(tooltip);
+        barC.onmousemove=e=>{
+            tooltip.style.left=(e.offsetX+18)+'px';
+            tooltip.style.top=(e.offsetY-80)+'px';
+            tooltip.style.opacity=1;
+        };
+        barC.onmouseleave=()=>{tooltip.style.opacity=0;};
+        area.appendChild(barC);
+    });
+}
+document.getElementById("chartType").addEventListener("change",renderGraph);
+calculateMortgage();
+</script>
+</body>
+</html>

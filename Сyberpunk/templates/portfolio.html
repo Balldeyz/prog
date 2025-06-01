@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O aplikaci | CyberFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet">
+   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="glitch-text">CYBER<span style="color: var(--secondary)">FINANCE</span></h1>
+        
+        <div class="feature">
+            <div class="feature-icon"><i class="fas fa-chart-network"></i></div>
+            <div class="feature-content">
+                <h3>FINANČNÍ TRACKER</h3>
+                <p>Realtime monitoring příjmů a výdajů s pokročilou analýzou. Vizualizace dat v 3D gridu s možností full immersion prohlížení.</p>
+            </div>
+        </div>
+        
+        <div class="feature">
+            <div class="feature-icon"><i class="fas fa-ai"></i></div>
+            <div class="feature-content">
+                <h3>NEURAL ASSISTANT</h3>
+                <p>Naše AI využívá quantum computing pro predikci trhů a optimalizaci vašich investic. 24/7 dostupnost ve všech časových pásmech.</p>
+            </div>
+        </div>
+        
+        <div class="feature">
+            <div class="feature-icon"><i class="fas fa-file-waveform"></i></div>
+            <div class="feature-content">
+                <h3>DYNAMIC REPORTING</h3>
+                <p>Generátor reportů s holografickým výstupem. Export dat do všech formátů včetně neuro-implant kompatibilních.</p>
+            </div>
+        </div>
+        
+        <div class="feature">
+            <div class="feature-icon"><i class="fas fa-shield-halved"></i></div>
+            <div class="feature-content">
+                <h3>QUANTUM ENCRYPTION</h3>
+                <p>Blockchain zabezpečení s kvantovou šifrou. Zero-knowledge proof technologie zaručuje absolutní soukromí vašich dat.
+                (v procesu)</p>
+            </div>
+        </div>
+        
+        <a href="{{ url_for('main_menu') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i> ZPĚT NA TERMINAL
+        </a>
+    </div>
+
+    <script>
+        // Add glitch effect to random features
+        const features = document.querySelectorAll('.feature');
+        setInterval(() => {
+            const randomFeature = features[Math.floor(Math.random() * features.length)];
+            randomFeature.classList.add('glitch-effect');
+            setTimeout(() => {
+                randomFeature.classList.remove('glitch-effect');
+            }, 200);
+        }, 3000);
+    </script>
+</body>
+</html>
